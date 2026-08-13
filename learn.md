@@ -69,3 +69,20 @@ This serves as the underlying state layer for the Gateway APIs (Phase 3 and 4) a
 
 **Decisions & tradeoffs:**
 We opted for synchronous `psycopg2` during model definition, but `asyncpg` is installed if the FastAPI application needs asynchronous queries later. We used `JSONB` for `policies.conditions` and `audit_logs.meta_data` to ensure schema flexibility without full table migrations.
+
+## [2026-08-13] Authentication, Identity, and Session Management
+
+**Phase:** Phase 3
+**Files touched:** `security/auth.py`, `security/dependencies.py`, `backend/routes/auth.py`, `backend/main.py`, `backend/schemas/auth.py`, `database/session.py`
+
+**What was built:**
+Implemented FastAPI JWT authentication using `passlib[bcrypt]` and `PyJWT`. Created endpoints for `/login` and `/logout` with OAuth2 password flow. Added FastAPI dependencies to retrieve the current user from the database via token, and `require_role` for Role-Based Access Control. Set up the main FastAPI application.
+
+**What it does / why it matters:**
+This establishes the security perimeter for the Gateway. It ensures that every request to EAISG is authenticated and scoped to a specific identity and role, which feeds into rate-limiting, policy evaluation, and audit logging.
+
+**How it connects:**
+Relies on the `User` and `Session` database models from Phase 2. Forms the foundation for the Prompt Analyzer MVP (Phase 4), which requires an authenticated context to evaluate policy.
+
+**Decisions & tradeoffs:**
+We included the `refresh_token` storage in the database to support explicit session revocation, which is a requirement for enterprise adoption. Local password auth is implemented as the MVP, with SSO/SAML integration flagged for later extension.
