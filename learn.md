@@ -52,3 +52,20 @@ This lays the foundation for all subsequent code. The Git initialization allows 
 
 **Decisions & tradeoffs:**
 We opted for a monolithic repository structure over micro-repos for ease of orchestration and full-stack testing in the early MVP phases. `docs/SCOPE.md` acts as an immutable anchor to prevent scope creep.
+
+## [2026-08-13] Database Models and Config
+
+**Phase:** Phase 2 — Database Design
+**Files touched:** `database/models.py`, `database/config.py`, `alembic/env.py`, `requirements.txt`
+
+**What was built:**
+Configured the Python virtual environment and installed database dependencies (`sqlalchemy`, `alembic`, `psycopg2`). Designed the full PostgreSQL schema using SQLAlchemy 2.0 `Mapped` declarative base. Initialized Alembic and hooked it up to the DB config and our `models.Base`.
+
+**What it does / why it matters:**
+Provides the explicit data persistence structures for users, policies, AI destinations, requests, findings, and audit logs. The tables map exactly to Phase 2, including JSONB types for flexible findings and conditions.
+
+**How it connects:**
+This serves as the underlying state layer for the Gateway APIs (Phase 3 and 4) and the Policy Engine. Alembic provides structured schema versioning.
+
+**Decisions & tradeoffs:**
+We opted for synchronous `psycopg2` during model definition, but `asyncpg` is installed if the FastAPI application needs asynchronous queries later. We used `JSONB` for `policies.conditions` and `audit_logs.meta_data` to ensure schema flexibility without full table migrations.
