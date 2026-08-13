@@ -86,3 +86,20 @@ Relies on the `User` and `Session` database models from Phase 2. Forms the found
 
 **Decisions & tradeoffs:**
 We included the `refresh_token` storage in the database to support explicit session revocation, which is a requirement for enterprise adoption. Local password auth is implemented as the MVP, with SSO/SAML integration flagged for later extension.
+
+## [2026-08-13] Prompt Analyzer MVP
+
+**Phase:** Phase 4
+**Files touched:** `backend/schemas/analyze.py`, `ai_engine/detectors/presidio_pii.py`, `ai_engine/detectors/regex_secret.py`, `policy_engine/evaluator.py`, `backend/routes/analyze.py`, `backend/main.py`
+
+**What was built:**
+Constructed the end-to-end deterministic prompt analyzer endpoint. This includes the PII detector (wrapping `presidio-analyzer`), a Regex/Entropy Secret Detector, and a Policy Evaluator that matches findings against database rules. The API endpoint `/api/v1/analyze/prompt` glues these together, hashing the prompt, running detectors, scoring risk, evaluating policy, persisting the findings to the DB, and producing an Audit Log.
+
+**What it does / why it matters:**
+This validates the core architectural loop of the gateway. We now have a functioning pipeline that can take a user's prompt, authenticate them, check the prompt for PII or hardcoded secrets, make a decision (ALLOW/BLOCK/WARN), and record everything in a compliant audit log without saving the raw prompt text.
+
+**How it connects:**
+Depends heavily on the Phase 2 database schema for persistence and the Phase 3 Auth layer to identify the user. This deterministic layer serves as the baseline for the future ML models (Phase 8) and LangGraph Agents (Phase 9) to sit on top of.
+
+**Decisions & tradeoffs:**
+We opted for a very simplistic regex implementation and a default English configuration for Presidio. The entropy calculation is unoptimized for MVP. Most importantly, the raw prompt is *hashed* but not saved in plain text in the `requests` table, adhering to the data-minimization principle outlined in the Threat Model.
