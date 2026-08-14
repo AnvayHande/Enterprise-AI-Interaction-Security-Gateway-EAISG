@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 
 class PromptAnalyzeRequest(BaseModel):
     prompt: str
@@ -10,9 +10,13 @@ class FindingSchema(BaseModel):
     confidence: float
     detector_source: str
     evidence: Optional[str] = None
+    start_idx: Optional[int] = None
+    end_idx: Optional[int] = None
 
 class AnalyzeResponse(BaseModel):
     request_id: int
     final_action: str
     risk_score: float
     findings: List[FindingSchema]
+    aggregation_breakdown: Optional[Dict[str, Any]] = None
+    sanitized_content: Optional[str] = None

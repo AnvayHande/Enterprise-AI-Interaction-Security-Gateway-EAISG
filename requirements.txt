@@ -7,3 +7,17 @@ asyncpg
 pydantic
 pydantic-settings
 python-dotenv
+passlib[bcrypt]
+PyJWT
+presidio-analyzer
+python-magic-bin
+pyclamd
+pdfplumber
+python-docx
+openpyxl
+python-multipart
+scikit-learn
+joblib
+langgraph
+langchain-core
+langchain-openai

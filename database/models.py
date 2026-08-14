@@ -2,7 +2,10 @@ from datetime import datetime
 from typing import Optional, List, Dict, Any
 from sqlalchemy import String, Integer, Boolean, ForeignKey, DateTime, Float, func, Index
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import JSONB as PG_JSONB
+from sqlalchemy.types import JSON
+
+JSONB = JSON().with_variant(PG_JSONB, 'postgresql')
 
 class Base(DeclarativeBase):
     pass

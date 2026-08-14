@@ -1,0 +1,702 @@
+[
+  {
+    "text": "How do I center a div in CSS?",
+    "label": "SAFE"
+  },
+  {
+    "text": "For my next task, What are the health benefits of eating apples?",
+    "label": "SAFE"
+  },
+  {
+    "text": "var data = [1, 2, 3]; data.forEach(d => console.log(d));. What do you think?",
+    "label": "SOURCE_CODE"
+  },
+  {
+    "text": "import os\nfrom sys import argv\nclass MyScript:\n    pass. What do you think?",
+    "label": "SOURCE_CODE"
+  },
+  {
+    "text": "Please analyze this: Draft a generic marketing copy for a new shoe launch.",
+    "label": "SAFE"
+  },
+  {
+    "text": "Use this bearer token for auth: Bearer eyJhbGciOiJIUzI1NiIsInR5c.... What do you think?",
+    "label": "CREDENTIALS"
+  },
+  {
+    "text": "Please analyze this: The profit margin on the new product line is extremely tight.",
+    "label": "FINANCIAL"
+  },
+  {
+    "text": "Can you summarize: We are facing a lawsuit from a former employee, draft a response.",
+    "label": "LEGAL"
+  },
+  {
+    "text": "For my next task, Our Q3 EBITDA is down by 4%, please draft an explanation for the board.",
+    "label": "FINANCIAL"
+  },
+  {
+    "text": "Can you summarize: What are the health benefits of eating apples?",
+    "label": "SAFE"
+  },
+  {
+    "text": "github token ghP_1234567890abcdef1234567890abcdef1234",
+    "label": "CREDENTIALS"
+  },
+  {
+    "text": "For my next task, This communication is privileged and confidential attorney-client work product.",
+    "label": "LEGAL"
+  },
+  {
+    "text": "var data = [1, 2, 3]; data.forEach(d => console.log(d));",
+    "label": "SOURCE_CODE"
+  },
+  {
+    "text": "This communication is privileged and confidential attorney-client work product.",
+    "label": "LEGAL"
+  },
+  {
+    "text": "Could you help me summarize this public article?. What do you think?",
+    "label": "SAFE"
+  },
+  {
+    "text": "Use this bearer token for auth: Bearer eyJhbGciOiJIUzI1NiIsInR5c...",
+    "label": "CREDENTIALS"
+  },
+  {
+    "text": "For my next task, How do I center a div in CSS?",
+    "label": "SAFE"
+  },
+  {
+    "text": "Please analyze this: public class HelloWorld { public static void main(String[] args) { System.out.println(\"Hi\"); } }",
+    "label": "SOURCE_CODE"
+  },
+  {
+    "text": "Explain quantum computing like I'm five.",
+    "label": "SAFE"
+  },
+  {
+    "text": "For my next task, Generate a list of 10 random words.",
+    "label": "SAFE"
+  },
+  {
+    "text": "What are the health benefits of eating apples?. What do you think?",
+    "label": "SAFE"
+  },
+  {
+    "text": "Please analyze this: Please initiate a wire transfer of $50,000 to routing number 123456789.",
+    "label": "FINANCIAL"
+  },
+  {
+    "text": "def calculate_sum(a, b):\n    return a + b\nprint(calculate_sum(2,3)). What do you think?",
+    "label": "SOURCE_CODE"
+  },
+  {
+    "text": "def calculate_sum(a, b):\n    return a + b\nprint(calculate_sum(2,3))",
+    "label": "SOURCE_CODE"
+  },
+  {
+    "text": "Can you summarize: Our Q3 EBITDA is down by 4%, please draft an explanation for the board.",
+    "label": "FINANCIAL"
+  },
+  {
+    "text": "Please initiate a wire transfer of $50,000 to routing number 123456789.",
+    "label": "FINANCIAL"
+  },
+  {
+    "text": "Our Q3 EBITDA is down by 4%, please draft an explanation for the board.. What do you think?",
+    "label": "FINANCIAL"
+  },
+  {
+    "text": "Can you summarize: Patient DOB is 01/15/1980.",
+    "label": "PII"
+  },
+  {
+    "text": "Can you summarize: Write a polite email to my team about the upcoming holiday.",
+    "label": "SAFE"
+  },
+  {
+    "text": "My phone number is 555-0198, call me.",
+    "label": "PII"
+  },
+  {
+    "text": "Can you summarize: import os\nfrom sys import argv\nclass MyScript:\n    pass",
+    "label": "SOURCE_CODE"
+  },
+  {
+    "text": "Can you summarize: Email alice.smith@example.com for more information.",
+    "label": "PII"
+  },
+  {
+    "text": "For my next task, Please initiate a wire transfer of $50,000 to routing number 123456789.",
+    "label": "FINANCIAL"
+  },
+  {
+    "text": "Can you summarize: My phone number is 555-0198, call me.",
+    "label": "PII"
+  },
+  {
+    "text": "Could you help me summarize this public article?",
+    "label": "SAFE"
+  },
+  {
+    "text": "public class HelloWorld { public static void main(String[] args) { System.out.println(\"Hi\"); } }",
+    "label": "SOURCE_CODE"
+  },
+  {
+    "text": "The profit margin on the new product line is extremely tight.",
+    "label": "FINANCIAL"
+  },
+  {
+    "text": "Can you summarize: This document is highly confidential and subject to NDA.",
+    "label": "LEGAL"
+  },
+  {
+    "text": "public class HelloWorld { public static void main(String[] args) { System.out.println(\"Hi\"); } }. What do you think?",
+    "label": "SOURCE_CODE"
+  },
+  {
+    "text": "For my next task, Email alice.smith@example.com for more information.",
+    "label": "PII"
+  },
+  {
+    "text": "The patent pending technology must not be disclosed.. What do you think?",
+    "label": "LEGAL"
+  },
+  {
+    "text": "Can you summarize: Draft a generic marketing copy for a new shoe launch.",
+    "label": "SAFE"
+  },
+  {
+    "text": "Here is the access key: AKIAIOSFODNN7EXAMPLE",
+    "label": "CREDENTIALS"
+  },
+  {
+    "text": "Please analyze this: Her social security number is 000-11-2222.",
+    "label": "PII"
+  },
+  {
+    "text": "For my next task, The patent pending technology must not be disclosed.",
+    "label": "LEGAL"
+  },
+  {
+    "text": "Can you summarize: The patent pending technology must not be disclosed.",
+    "label": "LEGAL"
+  },
+  {
+    "text": "For my next task, Patient DOB is 01/15/1980.",
+    "label": "PII"
+  },
+  {
+    "text": "Can you summarize: Could you help me summarize this public article?",
+    "label": "SAFE"
+  },
+  {
+    "text": "Please analyze this: Email alice.smith@example.com for more information.",
+    "label": "PII"
+  },
+  {
+    "text": "For my next task, The profit margin on the new product line is extremely tight.",
+    "label": "FINANCIAL"
+  },
+  {
+    "text": "Explain quantum computing like I'm five.. What do you think?",
+    "label": "SAFE"
+  },
+  {
+    "text": "Patient DOB is 01/15/1980.",
+    "label": "PII"
+  },
+  {
+    "text": "For my next task, Write a polite email to my team about the upcoming holiday.",
+    "label": "SAFE"
+  },
+  {
+    "text": "Can you summarize: const x = 10;\nfunction doSomething() {\n console.log(x);\n}",
+    "label": "SOURCE_CODE"
+  },
+  {
+    "text": "Translate 'hello' to Spanish.",
+    "label": "SAFE"
+  },
+  {
+    "text": "For my next task, github token ghP_1234567890abcdef1234567890abcdef1234",
+    "label": "CREDENTIALS"
+  },
+  {
+    "text": "Please analyze this: slack integration token fake-slack-token-1234567890-abcdef",
+    "label": "CREDENTIALS"
+  },
+  {
+    "text": "Her social security number is 000-11-2222.. What do you think?",
+    "label": "PII"
+  },
+  {
+    "text": "slack integration token fake-slack-token-1234567890-abcdef",
+    "label": "CREDENTIALS"
+  },
+  {
+    "text": "Please analyze this: How do I center a div in CSS?",
+    "label": "SAFE"
+  },
+  {
+    "text": "For my next task, Summarize the proposed M&A strategy with our competitor.",
+    "label": "FINANCIAL"
+  },
+  {
+    "text": "Please analyze this: def calculate_sum(a, b):\n    return a + b\nprint(calculate_sum(2,3))",
+    "label": "SOURCE_CODE"
+  },
+  {
+    "text": "Please analyze this: My phone number is 555-0198, call me.",
+    "label": "PII"
+  },
+  {
+    "text": "For my next task, import os\nfrom sys import argv\nclass MyScript:\n    pass",
+    "label": "SOURCE_CODE"
+  },
+  {
+    "text": "How do I center a div in CSS?. What do you think?",
+    "label": "SAFE"
+  },
+  {
+    "text": "Can you summarize: Explain quantum computing like I'm five.",
+    "label": "SAFE"
+  },
+  {
+    "text": "Can you summarize: How do I center a div in CSS?",
+    "label": "SAFE"
+  },
+  {
+    "text": "John Doe lives at 123 Main St, Springfield.",
+    "label": "PII"
+  },
+  {
+    "text": "Can you summarize: Here is the access key: AKIAIOSFODNN7EXAMPLE",
+    "label": "CREDENTIALS"
+  },
+  {
+    "text": "Can you summarize: Please initiate a wire transfer of $50,000 to routing number 123456789.",
+    "label": "FINANCIAL"
+  },
+  {
+    "text": "Summarize the proposed M&A strategy with our competitor.. What do you think?",
+    "label": "FINANCIAL"
+  },
+  {
+    "text": "Please analyze this: This document is highly confidential and subject to NDA.",
+    "label": "LEGAL"
+  },
+  {
+    "text": "Translate 'hello' to Spanish.. What do you think?",
+    "label": "SAFE"
+  },
+  {
+    "text": "Please analyze this: import os\nfrom sys import argv\nclass MyScript:\n    pass",
+    "label": "SOURCE_CODE"
+  },
+  {
+    "text": "Email alice.smith@example.com for more information.",
+    "label": "PII"
+  },
+  {
+    "text": "Please analyze this: Our Q3 EBITDA is down by 4%, please draft an explanation for the board.",
+    "label": "FINANCIAL"
+  },
+  {
+    "text": "Please analyze this: var data = [1, 2, 3]; data.forEach(d => console.log(d));",
+    "label": "SOURCE_CODE"
+  },
+  {
+    "text": "For my next task, Could you help me summarize this public article?",
+    "label": "SAFE"
+  },
+  {
+    "text": "Patient DOB is 01/15/1980.. What do you think?",
+    "label": "PII"
+  },
+  {
+    "text": "Please analyze this: -----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEA...\n-----END RSA PRIVATE KEY-----",
+    "label": "CREDENTIALS"
+  },
+  {
+    "text": "Please analyze this: What are the health benefits of eating apples?",
+    "label": "SAFE"
+  },
+  {
+    "text": "Can you summarize: slack integration token fake-slack-token-1234567890-abcdef",
+    "label": "CREDENTIALS"
+  },
+  {
+    "text": "Please analyze this: Use this bearer token for auth: Bearer eyJhbGciOiJIUzI1NiIsInR5c...",
+    "label": "CREDENTIALS"
+  },
+  {
+    "text": "const x = 10;\nfunction doSomething() {\n console.log(x);\n}",
+    "label": "SOURCE_CODE"
+  },
+  {
+    "text": "const x = 10;\nfunction doSomething() {\n console.log(x);\n}. What do you think?",
+    "label": "SOURCE_CODE"
+  },
+  {
+    "text": "For my next task, -----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEA...\n-----END RSA PRIVATE KEY-----",
+    "label": "CREDENTIALS"
+  },
+  {
+    "text": "Can you summarize: Use this bearer token for auth: Bearer eyJhbGciOiJIUzI1NiIsInR5c...",
+    "label": "CREDENTIALS"
+  },
+  {
+    "text": "My phone number is 555-0198, call me.. What do you think?",
+    "label": "PII"
+  },
+  {
+    "text": "import os\nfrom sys import argv\nclass MyScript:\n    pass",
+    "label": "SOURCE_CODE"
+  },
+  {
+    "text": "Can you summarize: The profit margin on the new product line is extremely tight.",
+    "label": "FINANCIAL"
+  },
+  {
+    "text": "Please analyze this: Can you recommend some good sci-fi books?",
+    "label": "SAFE"
+  },
+  {
+    "text": "For my next task, My phone number is 555-0198, call me.",
+    "label": "PII"
+  },
+  {
+    "text": "This document is highly confidential and subject to NDA.. What do you think?",
+    "label": "LEGAL"
+  },
+  {
+    "text": "For my next task, What is the capital of France?",
+    "label": "SAFE"
+  },
+  {
+    "text": "We are facing a lawsuit from a former employee, draft a response.. What do you think?",
+    "label": "LEGAL"
+  },
+  {
+    "text": "For my next task, public class HelloWorld { public static void main(String[] args) { System.out.println(\"Hi\"); } }",
+    "label": "SOURCE_CODE"
+  },
+  {
+    "text": "For my next task, Review this settlement agreement for any loopholes.",
+    "label": "LEGAL"
+  },
+  {
+    "text": "For my next task, Explain quantum computing like I'm five.",
+    "label": "SAFE"
+  },
+  {
+    "text": "Review this settlement agreement for any loopholes.",
+    "label": "LEGAL"
+  },
+  {
+    "text": "Here is the access key: AKIAIOSFODNN7EXAMPLE. What do you think?",
+    "label": "CREDENTIALS"
+  },
+  {
+    "text": "Generate a list of 10 random words.",
+    "label": "SAFE"
+  },
+  {
+    "text": "Generate a list of 10 random words.. What do you think?",
+    "label": "SAFE"
+  },
+  {
+    "text": "Can you summarize: def calculate_sum(a, b):\n    return a + b\nprint(calculate_sum(2,3))",
+    "label": "SOURCE_CODE"
+  },
+  {
+    "text": "Please analyze this: Patient DOB is 01/15/1980.",
+    "label": "PII"
+  },
+  {
+    "text": "Please analyze this: We are facing a lawsuit from a former employee, draft a response.",
+    "label": "LEGAL"
+  },
+  {
+    "text": "Can you summarize: Attached is the cash flow statement and balance sheet for last quarter.",
+    "label": "FINANCIAL"
+  },
+  {
+    "text": "Can you summarize: github token ghP_1234567890abcdef1234567890abcdef1234",
+    "label": "CREDENTIALS"
+  },
+  {
+    "text": "Can you summarize: Generate a list of 10 random words.",
+    "label": "SAFE"
+  },
+  {
+    "text": "Write a polite email to my team about the upcoming holiday.. What do you think?",
+    "label": "SAFE"
+  },
+  {
+    "text": "For my next task, var data = [1, 2, 3]; data.forEach(d => console.log(d));",
+    "label": "SOURCE_CODE"
+  },
+  {
+    "text": "For my next task, John Doe lives at 123 Main St, Springfield.",
+    "label": "PII"
+  },
+  {
+    "text": "Write a polite email to my team about the upcoming holiday.",
+    "label": "SAFE"
+  },
+  {
+    "text": "Draft a generic marketing copy for a new shoe launch.. What do you think?",
+    "label": "SAFE"
+  },
+  {
+    "text": "Can you summarize: This communication is privileged and confidential attorney-client work product.",
+    "label": "LEGAL"
+  },
+  {
+    "text": "For my next task, Translate 'hello' to Spanish.",
+    "label": "SAFE"
+  },
+  {
+    "text": "For my next task, We are facing a lawsuit from a former employee, draft a response.",
+    "label": "LEGAL"
+  },
+  {
+    "text": "What is the capital of France?",
+    "label": "SAFE"
+  },
+  {
+    "text": "-----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEA...\n-----END RSA PRIVATE KEY-----. What do you think?",
+    "label": "CREDENTIALS"
+  },
+  {
+    "text": "The patent pending technology must not be disclosed.",
+    "label": "LEGAL"
+  },
+  {
+    "text": "Please analyze this: const x = 10;\nfunction doSomething() {\n console.log(x);\n}",
+    "label": "SOURCE_CODE"
+  },
+  {
+    "text": "Can you summarize: Summarize the proposed M&A strategy with our competitor.",
+    "label": "FINANCIAL"
+  },
+  {
+    "text": "Please analyze this: Generate a list of 10 random words.",
+    "label": "SAFE"
+  },
+  {
+    "text": "Her social security number is 000-11-2222.",
+    "label": "PII"
+  },
+  {
+    "text": "Can you summarize: Her social security number is 000-11-2222.",
+    "label": "PII"
+  },
+  {
+    "text": "For my next task, This document is highly confidential and subject to NDA.",
+    "label": "LEGAL"
+  },
+  {
+    "text": "We are facing a lawsuit from a former employee, draft a response.",
+    "label": "LEGAL"
+  },
+  {
+    "text": "Please analyze this: John Doe lives at 123 Main St, Springfield.",
+    "label": "PII"
+  },
+  {
+    "text": "This document is highly confidential and subject to NDA.",
+    "label": "LEGAL"
+  },
+  {
+    "text": "Can you recommend some good sci-fi books?",
+    "label": "SAFE"
+  },
+  {
+    "text": "Please analyze this: This communication is privileged and confidential attorney-client work product.",
+    "label": "LEGAL"
+  },
+  {
+    "text": "Please analyze this: Explain quantum computing like I'm five.",
+    "label": "SAFE"
+  },
+  {
+    "text": "Email alice.smith@example.com for more information.. What do you think?",
+    "label": "PII"
+  },
+  {
+    "text": "Please analyze this: Write a polite email to my team about the upcoming holiday.",
+    "label": "SAFE"
+  },
+  {
+    "text": "The profit margin on the new product line is extremely tight.. What do you think?",
+    "label": "FINANCIAL"
+  },
+  {
+    "text": "Can you summarize: Review this settlement agreement for any loopholes.",
+    "label": "LEGAL"
+  },
+  {
+    "text": "Please analyze this: The patent pending technology must not be disclosed.",
+    "label": "LEGAL"
+  },
+  {
+    "text": "For my next task, Can you recommend some good sci-fi books?",
+    "label": "SAFE"
+  },
+  {
+    "text": "This communication is privileged and confidential attorney-client work product.. What do you think?",
+    "label": "LEGAL"
+  },
+  {
+    "text": "-----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEA...\n-----END RSA PRIVATE KEY-----",
+    "label": "CREDENTIALS"
+  },
+  {
+    "text": "github token ghP_1234567890abcdef1234567890abcdef1234. What do you think?",
+    "label": "CREDENTIALS"
+  },
+  {
+    "text": "Please analyze this: Review this settlement agreement for any loopholes.",
+    "label": "LEGAL"
+  },
+  {
+    "text": "For my next task, Use this bearer token for auth: Bearer eyJhbGciOiJIUzI1NiIsInR5c...",
+    "label": "CREDENTIALS"
+  },
+  {
+    "text": "For my next task, Draft a generic marketing copy for a new shoe launch.",
+    "label": "SAFE"
+  },
+  {
+    "text": "Can you summarize: var data = [1, 2, 3]; data.forEach(d => console.log(d));",
+    "label": "SOURCE_CODE"
+  },
+  {
+    "text": "Review this settlement agreement for any loopholes.. What do you think?",
+    "label": "LEGAL"
+  },
+  {
+    "text": "For my next task, slack integration token fake-slack-token-1234567890-abcdef",
+    "label": "CREDENTIALS"
+  },
+  {
+    "text": "What are the health benefits of eating apples?",
+    "label": "SAFE"
+  },
+  {
+    "text": "Please analyze this: Could you help me summarize this public article?",
+    "label": "SAFE"
+  },
+  {
+    "text": "Please analyze this: Summarize the proposed M&A strategy with our competitor.",
+    "label": "FINANCIAL"
+  },
+  {
+    "text": "For my next task, Her social security number is 000-11-2222.",
+    "label": "PII"
+  },
+  {
+    "text": "Please analyze this: Attached is the cash flow statement and balance sheet for last quarter.",
+    "label": "FINANCIAL"
+  },
+  {
+    "text": "John Doe lives at 123 Main St, Springfield.. What do you think?",
+    "label": "PII"
+  },
+  {
+    "text": "Please analyze this: github token ghP_1234567890abcdef1234567890abcdef1234",
+    "label": "CREDENTIALS"
+  },
+  {
+    "text": "Our Q3 EBITDA is down by 4%, please draft an explanation for the board.",
+    "label": "FINANCIAL"
+  },
+  {
+    "text": "Can you summarize: public class HelloWorld { public static void main(String[] args) { System.out.println(\"Hi\"); } }",
+    "label": "SOURCE_CODE"
+  },
+  {
+    "text": "slack integration token fake-slack-token-1234567890-abcdef. What do you think?",
+    "label": "CREDENTIALS"
+  },
+  {
+    "text": "For my next task, Here is the access key: AKIAIOSFODNN7EXAMPLE",
+    "label": "CREDENTIALS"
+  },
+  {
+    "text": "For my next task, def calculate_sum(a, b):\n    return a + b\nprint(calculate_sum(2,3))",
+    "label": "SOURCE_CODE"
+  },
+  {
+    "text": "For my next task, Attached is the cash flow statement and balance sheet for last quarter.",
+    "label": "FINANCIAL"
+  },
+  {
+    "text": "Attached is the cash flow statement and balance sheet for last quarter.",
+    "label": "FINANCIAL"
+  },
+  {
+    "text": "Can you summarize: Can you recommend some good sci-fi books?",
+    "label": "SAFE"
+  },
+  {
+    "text": "What is the capital of France?. What do you think?",
+    "label": "SAFE"
+  },
+  {
+    "text": "Can you summarize: What is the capital of France?",
+    "label": "SAFE"
+  },
+  {
+    "text": "Can you summarize: John Doe lives at 123 Main St, Springfield.",
+    "label": "PII"
+  },
+  {
+    "text": "Please analyze this: Here is the access key: AKIAIOSFODNN7EXAMPLE",
+    "label": "CREDENTIALS"
+  },
+  {
+    "text": "Can you recommend some good sci-fi books?. What do you think?",
+    "label": "SAFE"
+  },
+  {
+    "text": "For my next task, const x = 10;\nfunction doSomething() {\n console.log(x);\n}",
+    "label": "SOURCE_CODE"
+  },
+  {
+    "text": "Please analyze this: Translate 'hello' to Spanish.",
+    "label": "SAFE"
+  },
+  {
+    "text": "Draft a generic marketing copy for a new shoe launch.",
+    "label": "SAFE"
+  },
+  {
+    "text": "Attached is the cash flow statement and balance sheet for last quarter.. What do you think?",
+    "label": "FINANCIAL"
+  },
+  {
+    "text": "Please initiate a wire transfer of $50,000 to routing number 123456789.. What do you think?",
+    "label": "FINANCIAL"
+  },
+  {
+    "text": "Summarize the proposed M&A strategy with our competitor.",
+    "label": "FINANCIAL"
+  },
+  {
+    "text": "Please analyze this: What is the capital of France?",
+    "label": "SAFE"
+  },
+  {
+    "text": "Can you summarize: Translate 'hello' to Spanish.",
+    "label": "SAFE"
+  },
+  {
+    "text": "Can you summarize: -----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEA...\n-----END RSA PRIVATE KEY-----",
+    "label": "CREDENTIALS"
+  }
+]
