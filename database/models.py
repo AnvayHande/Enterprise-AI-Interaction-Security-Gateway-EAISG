@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional, List, Dict, Any
-from sqlalchemy import String, Integer, Boolean, ForeignKey, DateTime, Float, func, Index
+from sqlalchemy import String, Integer, Boolean, ForeignKey, DateTime, Float, func, Index, event
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import JSONB as PG_JSONB
 from sqlalchemy.types import JSON
@@ -51,6 +51,10 @@ class AIDestination(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(100), unique=True)
     provider: Mapped[str] = mapped_column(String(100)) # e.g. openai, anthropic, local
+    trust_level: Mapped[str] = mapped_column(String(50), default="PUBLIC") # INTERNAL, PARTNER, PUBLIC
+    fallback_destination_id: Mapped[Optional[int]] = mapped_column(ForeignKey("ai_destinations.id"))
+    base_url: Mapped[Optional[str]] = mapped_column(String(255))
+    api_version: Mapped[Optional[str]] = mapped_column(String(50))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
@@ -133,3 +137,11 @@ class RetentionRequest(Base):
     status: Mapped[str] = mapped_column(String(50), default="PENDING") # PENDING, COMPLETED, REJECTED
     completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+@event.listens_for(AuditLog, 'before_update')
+def receive_before_update(mapper, connection, target):
+    raise RuntimeError("AuditLog entries are immutable and cannot be updated.")
+
+@event.listens_for(AuditLog, 'before_delete')
+def receive_before_delete(mapper, connection, target):
+    raise RuntimeError("AuditLog entries are immutable and cannot be deleted.")

@@ -20,3 +20,7 @@ class AnalyzeResponse(BaseModel):
     findings: List[FindingSchema]
     aggregation_breakdown: Optional[Dict[str, Any]] = None
     sanitized_content: Optional[str] = None
+    provider_response: Optional[str] = None
+    provider_used: Optional[int] = None
+    response_findings: Optional[List[FindingSchema]] = []
+    response_action: Optional[str] = None
