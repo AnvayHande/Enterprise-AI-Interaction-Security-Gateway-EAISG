@@ -94,6 +94,7 @@ class Request(Base):
 
     user: Mapped["User"] = relationship(back_populates="requests")
     findings: Mapped[List["Finding"]] = relationship(back_populates="request")
+    appeals: Mapped[List["Appeal"]] = relationship(back_populates="request")
 
     __table_args__ = (
         Index('ix_requests_user_id_created_at', 'user_id', 'created_at'),
@@ -137,6 +138,21 @@ class RetentionRequest(Base):
     status: Mapped[str] = mapped_column(String(50), default="PENDING") # PENDING, COMPLETED, REJECTED
     completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+class Appeal(Base):
+    __tablename__ = "appeals"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    request_id: Mapped[int] = mapped_column(ForeignKey("requests.id", ondelete="CASCADE"), index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    reason: Mapped[str] = mapped_column(String(500))
+    status: Mapped[str] = mapped_column(String(50), default="PENDING") # PENDING, APPROVED, REJECTED
+    reviewer_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    request: Mapped["Request"] = relationship(back_populates="appeals")
+    user: Mapped["User"] = relationship(foreign_keys=[user_id])
+    reviewer: Mapped[Optional["User"]] = relationship(foreign_keys=[reviewer_id])
 
 @event.listens_for(AuditLog, 'before_update')
 def receive_before_update(mapper, connection, target):

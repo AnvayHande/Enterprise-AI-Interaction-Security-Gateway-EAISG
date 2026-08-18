@@ -21,6 +21,9 @@ class MLClassifier:
         else:
             logger.warning(f"ML model not found at {self.model_path}. Run ml/train.py first.")
 
+    from core.cache import cached
+
+    @cached("ml_classifier")
     def analyze(self, text: str) -> List[Dict[str, Any]]:
         if not self.is_available or not text.strip():
             return []

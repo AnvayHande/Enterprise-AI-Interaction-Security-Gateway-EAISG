@@ -13,6 +13,9 @@ class PolicyEvaluator:
             return "WARN"
         return "ALLOW"
 
+    from core.cache import cached
+
+    @cached("policy_eval")
     def evaluate(self, findings: List[Dict[str, Any]], risk_score: float, user: User) -> str:
         # 14.4 Default Behavior When No Policy Matches
         final_action = self._get_default_action(risk_score)
