@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.backend
+    image: eaisg-backend:latest
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql://postgres:secure_password@db:5432/eaisg
+      - REDIS_URL=redis://redis:6379/0
+      - ENVIRONMENT=production
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+    deploy:
+      replicas: 3
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+      restart_policy:
+        condition: on-failure
+
+  worker:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.backend
+    image: eaisg-backend:latest
+    command: celery -A core.celery_app worker --loglevel=info
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql://postgres:secure_password@db:5432/eaisg
+      - REDIS_URL=redis://redis:6379/0
+      - ENVIRONMENT=production
+    depends_on:
+      - db
+      - redis
+    deploy:
+      replicas: 2
+
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secure_password
+      POSTGRES_DB: eaisg
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7
+    restart: always
+    command: ["redis-server", "--save", "60", "1", "--loglevel", "warning"]
+    volumes:
+      - redisdata:/data
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: ../docker/Dockerfile.frontend
+    image: eaisg-frontend:latest
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
+  redisdata:

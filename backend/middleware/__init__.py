@@ -1,0 +1,3 @@
+"""
+Middleware for EAISG Backend
+"""
