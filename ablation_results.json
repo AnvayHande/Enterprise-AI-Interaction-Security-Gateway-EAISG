@@ -1,0 +1,30 @@
+{
+  "Config A (Deterministic Only)": {
+    "Accuracy": 0.4666666666666667,
+    "Precision": 0.8,
+    "Recall": 0.36363636363636365,
+    "F1": 0.5000000000000001,
+    "Avg Latency (ms)": 51.55078570048014
+  },
+  "Config B (Deterministic + ML)": {
+    "Accuracy": 0.26666666666666666,
+    "Precision": 0.0,
+    "Recall": 0.0,
+    "F1": 0.0,
+    "Avg Latency (ms)": 4.531820615132649
+  },
+  "Config C (Full Pipeline)": {
+    "Accuracy": 0.26666666666666666,
+    "Precision": 0.0,
+    "Recall": 0.0,
+    "F1": 0.0,
+    "Avg Latency (ms)": 4.580291112263998
+  },
+  "Config D (Everything Agent)": {
+    "Accuracy": 0.9,
+    "Precision": 1.0,
+    "Recall": 0.8636363636363636,
+    "F1": 0.9268292682926829,
+    "Avg Latency (ms)": 1500.9560187657673
+  }
+}

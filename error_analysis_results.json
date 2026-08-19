@@ -1,0 +1,982 @@
+[
+  {
+    "type": "False Positive",
+    "text": "Can you summarize: Write a polite email to my team about the upcoming holiday.",
+    "true_label": "SAFE",
+    "system_response": {
+      "request_id": 2,
+      "final_action": "BLOCK",
+      "risk_score": 0.85,
+      "findings": [
+        {
+          "category": "PII_DATE_TIME",
+          "confidence": 0.85,
+          "detector_source": "PRESIDIO",
+          "evidence": "the upcoming holiday",
+          "start_idx": null,
+          "end_idx": null
+        }
+      ],
+      "aggregation_breakdown": {
+        "logic": "max_severity_with_agreement_boost",
+        "categories": {
+          "PII_DATE_TIME": {
+            "base_confidence": 0.85,
+            "independent_sources": [
+              "PRESIDIO"
+            ],
+            "agreement_boost_applied": 0.0,
+            "adjusted_score": 0.85
+          }
+        },
+        "final_score": 0.85,
+        "driving_category": "PII_DATE_TIME"
+      },
+      "sanitized_content": null,
+      "provider_response": null,
+      "provider_used": null,
+      "response_findings": [],
+      "response_action": null
+    }
+  },
+  {
+    "type": "False Negative",
+    "text": "Summarize the proposed M&A strategy with our competitor.. What do you think?",
+    "true_label": "FINANCIAL",
+    "system_response": {
+      "request_id": 4,
+      "final_action": "WARN",
+      "risk_score": 0.6,
+      "findings": [
+        {
+          "category": "FINANCIAL_DATA",
+          "confidence": 0.6,
+          "detector_source": "KEYWORD",
+          "evidence": "Matched keywords: M&A",
+          "start_idx": null,
+          "end_idx": null
+        }
+      ],
+      "aggregation_breakdown": {
+        "logic": "max_severity_with_agreement_boost",
+        "categories": {
+          "FINANCIAL_DATA": {
+            "base_confidence": 0.6,
+            "independent_sources": [
+              "KEYWORD"
+            ],
+            "agreement_boost_applied": 0.0,
+            "adjusted_score": 0.6
+          }
+        },
+        "final_score": 0.6,
+        "driving_category": "FINANCIAL_DATA"
+      },
+      "sanitized_content": null,
+      "provider_response": null,
+      "provider_used": null,
+      "response_findings": [],
+      "response_action": null
+    }
+  },
+  {
+    "type": "False Negative",
+    "text": "Her social security number is 000-11-2222.. What do you think?",
+    "true_label": "PII",
+    "system_response": {
+      "request_id": 6,
+      "final_action": "ALLOW",
+      "risk_score": 0.0,
+      "findings": [],
+      "aggregation_breakdown": {
+        "logic": "no_findings",
+        "final_score": 0.0
+      },
+      "sanitized_content": null,
+      "provider_response": "Response from Test Dest (dummy)\n(Prompt received: Her social security number is 000-11-2222.. What d...)",
+      "provider_used": 1,
+      "response_findings": [],
+      "response_action": null
+    }
+  },
+  {
+    "type": "False Positive",
+    "text": "Please analyze this: What is the capital of France?",
+    "true_label": "SAFE",
+    "system_response": {
+      "request_id": 20,
+      "final_action": "BLOCK",
+      "risk_score": 0.85,
+      "findings": [
+        {
+          "category": "PII_LOCATION",
+          "confidence": 0.85,
+          "detector_source": "PRESIDIO",
+          "evidence": "France",
+          "start_idx": null,
+          "end_idx": null
+        }
+      ],
+      "aggregation_breakdown": {
+        "logic": "max_severity_with_agreement_boost",
+        "categories": {
+          "PII_LOCATION": {
+            "base_confidence": 0.85,
+            "independent_sources": [
+              "PRESIDIO"
+            ],
+            "agreement_boost_applied": 0.0,
+            "adjusted_score": 0.85
+          }
+        },
+        "final_score": 0.85,
+        "driving_category": "PII_LOCATION"
+      },
+      "sanitized_content": null,
+      "provider_response": null,
+      "provider_used": null,
+      "response_findings": [],
+      "response_action": null
+    }
+  },
+  {
+    "type": "False Negative",
+    "text": "My phone number is 555-0198, call me.. What do you think?",
+    "true_label": "PII",
+    "system_response": {
+      "request_id": 30,
+      "final_action": "BLOCK",
+      "risk_score": 0.99,
+      "findings": [
+        {
+          "category": "PRIVATE_KEY_HEADER",
+          "confidence": 0.99,
+          "detector_source": "REGEX",
+          "evidence": "-----...",
+          "start_idx": null,
+          "end_idx": null
+        },
+        {
+          "category": "CREDENTIALS",
+          "confidence": 0.6470139888736963,
+          "detector_source": "ML_BASELINE",
+          "evidence": "Can you summarize: -----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEA...\n-----END RSA PRIVATE KEY-----",
+          "start_idx": null,
+          "end_idx": null
+        }
+      ],
+      "aggregation_breakdown": {
+        "logic": "max_severity_with_agreement_boost",
+        "categories": {
+          "PRIVATE_KEY_HEADER": {
+            "base_confidence": 0.99,
+            "independent_sources": [
+              "REGEX"
+            ],
+            "agreement_boost_applied": 0.0,
+            "adjusted_score": 0.99
+          },
+          "CREDENTIALS": {
+            "base_confidence": 0.6470139888736963,
+            "independent_sources": [
+              "ML_BASELINE"
+            ],
+            "agreement_boost_applied": 0.0,
+            "adjusted_score": 0.6470139888736963
+          }
+        },
+        "final_score": 0.99,
+        "driving_category": "PRIVATE_KEY_HEADER"
+      },
+      "sanitized_content": null,
+      "provider_response": null,
+      "provider_used": null,
+      "response_findings": [],
+      "response_action": null
+    }
+  },
+  {
+    "type": "False Negative",
+    "text": "Please analyze this: Summarize the proposed M&A strategy with our competitor.",
+    "true_label": "FINANCIAL",
+    "system_response": {
+      "request_id": 30,
+      "final_action": "BLOCK",
+      "risk_score": 0.99,
+      "findings": [
+        {
+          "category": "PRIVATE_KEY_HEADER",
+          "confidence": 0.99,
+          "detector_source": "REGEX",
+          "evidence": "-----...",
+          "start_idx": null,
+          "end_idx": null
+        },
+        {
+          "category": "CREDENTIALS",
+          "confidence": 0.6470139888736963,
+          "detector_source": "ML_BASELINE",
+          "evidence": "Can you summarize: -----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEA...\n-----END RSA PRIVATE KEY-----",
+          "start_idx": null,
+          "end_idx": null
+        }
+      ],
+      "aggregation_breakdown": {
+        "logic": "max_severity_with_agreement_boost",
+        "categories": {
+          "PRIVATE_KEY_HEADER": {
+            "base_confidence": 0.99,
+            "independent_sources": [
+              "REGEX"
+            ],
+            "agreement_boost_applied": 0.0,
+            "adjusted_score": 0.99
+          },
+          "CREDENTIALS": {
+            "base_confidence": 0.6470139888736963,
+            "independent_sources": [
+              "ML_BASELINE"
+            ],
+            "agreement_boost_applied": 0.0,
+            "adjusted_score": 0.6470139888736963
+          }
+        },
+        "final_score": 0.99,
+        "driving_category": "PRIVATE_KEY_HEADER"
+      },
+      "sanitized_content": null,
+      "provider_response": null,
+      "provider_used": null,
+      "response_findings": [],
+      "response_action": null
+    }
+  },
+  {
+    "type": "False Negative",
+    "text": "For my next task, Email alice.smith@example.com for more information.",
+    "true_label": "PII",
+    "system_response": {
+      "request_id": 30,
+      "final_action": "BLOCK",
+      "risk_score": 0.99,
+      "findings": [
+        {
+          "category": "PRIVATE_KEY_HEADER",
+          "confidence": 0.99,
+          "detector_source": "REGEX",
+          "evidence": "-----...",
+          "start_idx": null,
+          "end_idx": null
+        },
+        {
+          "category": "CREDENTIALS",
+          "confidence": 0.6470139888736963,
+          "detector_source": "ML_BASELINE",
+          "evidence": "Can you summarize: -----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEA...\n-----END RSA PRIVATE KEY-----",
+          "start_idx": null,
+          "end_idx": null
+        }
+      ],
+      "aggregation_breakdown": {
+        "logic": "max_severity_with_agreement_boost",
+        "categories": {
+          "PRIVATE_KEY_HEADER": {
+            "base_confidence": 0.99,
+            "independent_sources": [
+              "REGEX"
+            ],
+            "agreement_boost_applied": 0.0,
+            "adjusted_score": 0.99
+          },
+          "CREDENTIALS": {
+            "base_confidence": 0.6470139888736963,
+            "independent_sources": [
+              "ML_BASELINE"
+            ],
+            "agreement_boost_applied": 0.0,
+            "adjusted_score": 0.6470139888736963
+          }
+        },
+        "final_score": 0.99,
+        "driving_category": "PRIVATE_KEY_HEADER"
+      },
+      "sanitized_content": null,
+      "provider_response": null,
+      "provider_used": null,
+      "response_findings": [],
+      "response_action": null
+    }
+  },
+  {
+    "type": "False Negative",
+    "text": "Attached is the cash flow statement and balance sheet for last quarter.",
+    "true_label": "FINANCIAL",
+    "system_response": {
+      "request_id": 30,
+      "final_action": "BLOCK",
+      "risk_score": 0.99,
+      "findings": [
+        {
+          "category": "PRIVATE_KEY_HEADER",
+          "confidence": 0.99,
+          "detector_source": "REGEX",
+          "evidence": "-----...",
+          "start_idx": null,
+          "end_idx": null
+        },
+        {
+          "category": "CREDENTIALS",
+          "confidence": 0.6470139888736963,
+          "detector_source": "ML_BASELINE",
+          "evidence": "Can you summarize: -----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEA...\n-----END RSA PRIVATE KEY-----",
+          "start_idx": null,
+          "end_idx": null
+        }
+      ],
+      "aggregation_breakdown": {
+        "logic": "max_severity_with_agreement_boost",
+        "categories": {
+          "PRIVATE_KEY_HEADER": {
+            "base_confidence": 0.99,
+            "independent_sources": [
+              "REGEX"
+            ],
+            "agreement_boost_applied": 0.0,
+            "adjusted_score": 0.99
+          },
+          "CREDENTIALS": {
+            "base_confidence": 0.6470139888736963,
+            "independent_sources": [
+              "ML_BASELINE"
+            ],
+            "agreement_boost_applied": 0.0,
+            "adjusted_score": 0.6470139888736963
+          }
+        },
+        "final_score": 0.99,
+        "driving_category": "PRIVATE_KEY_HEADER"
+      },
+      "sanitized_content": null,
+      "provider_response": null,
+      "provider_used": null,
+      "response_findings": [],
+      "response_action": null
+    }
+  },
+  {
+    "type": "False Negative",
+    "text": "Can you summarize: Use this bearer token for auth: Bearer eyJhbGciOiJIUzI1NiIsInR5c...",
+    "true_label": "CREDENTIALS",
+    "system_response": {
+      "request_id": 30,
+      "final_action": "BLOCK",
+      "risk_score": 0.99,
+      "findings": [
+        {
+          "category": "PRIVATE_KEY_HEADER",
+          "confidence": 0.99,
+          "detector_source": "REGEX",
+          "evidence": "-----...",
+          "start_idx": null,
+          "end_idx": null
+        },
+        {
+          "category": "CREDENTIALS",
+          "confidence": 0.6470139888736963,
+          "detector_source": "ML_BASELINE",
+          "evidence": "Can you summarize: -----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEA...\n-----END RSA PRIVATE KEY-----",
+          "start_idx": null,
+          "end_idx": null
+        }
+      ],
+      "aggregation_breakdown": {
+        "logic": "max_severity_with_agreement_boost",
+        "categories": {
+          "PRIVATE_KEY_HEADER": {
+            "base_confidence": 0.99,
+            "independent_sources": [
+              "REGEX"
+            ],
+            "agreement_boost_applied": 0.0,
+            "adjusted_score": 0.99
+          },
+          "CREDENTIALS": {
+            "base_confidence": 0.6470139888736963,
+            "independent_sources": [
+              "ML_BASELINE"
+            ],
+            "agreement_boost_applied": 0.0,
+            "adjusted_score": 0.6470139888736963
+          }
+        },
+        "final_score": 0.99,
+        "driving_category": "PRIVATE_KEY_HEADER"
+      },
+      "sanitized_content": null,
+      "provider_response": null,
+      "provider_used": null,
+      "response_findings": [],
+      "response_action": null
+    }
+  },
+  {
+    "type": "False Negative",
+    "text": "Can you summarize: Our Q3 EBITDA is down by 4%, please draft an explanation for the board.",
+    "true_label": "FINANCIAL",
+    "system_response": {
+      "request_id": 30,
+      "final_action": "BLOCK",
+      "risk_score": 0.99,
+      "findings": [
+        {
+          "category": "PRIVATE_KEY_HEADER",
+          "confidence": 0.99,
+          "detector_source": "REGEX",
+          "evidence": "-----...",
+          "start_idx": null,
+          "end_idx": null
+        },
+        {
+          "category": "CREDENTIALS",
+          "confidence": 0.6470139888736963,
+          "detector_source": "ML_BASELINE",
+          "evidence": "Can you summarize: -----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEA...\n-----END RSA PRIVATE KEY-----",
+          "start_idx": null,
+          "end_idx": null
+        }
+      ],
+      "aggregation_breakdown": {
+        "logic": "max_severity_with_agreement_boost",
+        "categories": {
+          "PRIVATE_KEY_HEADER": {
+            "base_confidence": 0.99,
+            "independent_sources": [
+              "REGEX"
+            ],
+            "agreement_boost_applied": 0.0,
+            "adjusted_score": 0.99
+          },
+          "CREDENTIALS": {
+            "base_confidence": 0.6470139888736963,
+            "independent_sources": [
+              "ML_BASELINE"
+            ],
+            "agreement_boost_applied": 0.0,
+            "adjusted_score": 0.6470139888736963
+          }
+        },
+        "final_score": 0.99,
+        "driving_category": "PRIVATE_KEY_HEADER"
+      },
+      "sanitized_content": null,
+      "provider_response": null,
+      "provider_used": null,
+      "response_findings": [],
+      "response_action": null
+    }
+  },
+  {
+    "type": "False Negative",
+    "text": "For my next task, My phone number is 555-0198, call me.",
+    "true_label": "PII",
+    "system_response": {
+      "request_id": 30,
+      "final_action": "BLOCK",
+      "risk_score": 0.99,
+      "findings": [
+        {
+          "category": "PRIVATE_KEY_HEADER",
+          "confidence": 0.99,
+          "detector_source": "REGEX",
+          "evidence": "-----...",
+          "start_idx": null,
+          "end_idx": null
+        },
+        {
+          "category": "CREDENTIALS",
+          "confidence": 0.6470139888736963,
+          "detector_source": "ML_BASELINE",
+          "evidence": "Can you summarize: -----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEA...\n-----END RSA PRIVATE KEY-----",
+          "start_idx": null,
+          "end_idx": null
+        }
+      ],
+      "aggregation_breakdown": {
+        "logic": "max_severity_with_agreement_boost",
+        "categories": {
+          "PRIVATE_KEY_HEADER": {
+            "base_confidence": 0.99,
+            "independent_sources": [
+              "REGEX"
+            ],
+            "agreement_boost_applied": 0.0,
+            "adjusted_score": 0.99
+          },
+          "CREDENTIALS": {
+            "base_confidence": 0.6470139888736963,
+            "independent_sources": [
+              "ML_BASELINE"
+            ],
+            "agreement_boost_applied": 0.0,
+            "adjusted_score": 0.6470139888736963
+          }
+        },
+        "final_score": 0.99,
+        "driving_category": "PRIVATE_KEY_HEADER"
+      },
+      "sanitized_content": null,
+      "provider_response": null,
+      "provider_used": null,
+      "response_findings": [],
+      "response_action": null
+    }
+  },
+  {
+    "type": "False Negative",
+    "text": "import os\nfrom sys import argv\nclass MyScript:\n    pass",
+    "true_label": "SOURCE_CODE",
+    "system_response": {
+      "request_id": 30,
+      "final_action": "BLOCK",
+      "risk_score": 0.99,
+      "findings": [
+        {
+          "category": "PRIVATE_KEY_HEADER",
+          "confidence": 0.99,
+          "detector_source": "REGEX",
+          "evidence": "-----...",
+          "start_idx": null,
+          "end_idx": null
+        },
+        {
+          "category": "CREDENTIALS",
+          "confidence": 0.6470139888736963,
+          "detector_source": "ML_BASELINE",
+          "evidence": "Can you summarize: -----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEA...\n-----END RSA PRIVATE KEY-----",
+          "start_idx": null,
+          "end_idx": null
+        }
+      ],
+      "aggregation_breakdown": {
+        "logic": "max_severity_with_agreement_boost",
+        "categories": {
+          "PRIVATE_KEY_HEADER": {
+            "base_confidence": 0.99,
+            "independent_sources": [
+              "REGEX"
+            ],
+            "agreement_boost_applied": 0.0,
+            "adjusted_score": 0.99
+          },
+          "CREDENTIALS": {
+            "base_confidence": 0.6470139888736963,
+            "independent_sources": [
+              "ML_BASELINE"
+            ],
+            "agreement_boost_applied": 0.0,
+            "adjusted_score": 0.6470139888736963
+          }
+        },
+        "final_score": 0.99,
+        "driving_category": "PRIVATE_KEY_HEADER"
+      },
+      "sanitized_content": null,
+      "provider_response": null,
+      "provider_used": null,
+      "response_findings": [],
+      "response_action": null
+    }
+  },
+  {
+    "type": "False Negative",
+    "text": "John Doe lives at 123 Main St, Springfield.",
+    "true_label": "PII",
+    "system_response": {
+      "request_id": 30,
+      "final_action": "BLOCK",
+      "risk_score": 0.99,
+      "findings": [
+        {
+          "category": "PRIVATE_KEY_HEADER",
+          "confidence": 0.99,
+          "detector_source": "REGEX",
+          "evidence": "-----...",
+          "start_idx": null,
+          "end_idx": null
+        },
+        {
+          "category": "CREDENTIALS",
+          "confidence": 0.6470139888736963,
+          "detector_source": "ML_BASELINE",
+          "evidence": "Can you summarize: -----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEA...\n-----END RSA PRIVATE KEY-----",
+          "start_idx": null,
+          "end_idx": null
+        }
+      ],
+      "aggregation_breakdown": {
+        "logic": "max_severity_with_agreement_boost",
+        "categories": {
+          "PRIVATE_KEY_HEADER": {
+            "base_confidence": 0.99,
+            "independent_sources": [
+              "REGEX"
+            ],
+            "agreement_boost_applied": 0.0,
+            "adjusted_score": 0.99
+          },
+          "CREDENTIALS": {
+            "base_confidence": 0.6470139888736963,
+            "independent_sources": [
+              "ML_BASELINE"
+            ],
+            "agreement_boost_applied": 0.0,
+            "adjusted_score": 0.6470139888736963
+          }
+        },
+        "final_score": 0.99,
+        "driving_category": "PRIVATE_KEY_HEADER"
+      },
+      "sanitized_content": null,
+      "provider_response": null,
+      "provider_used": null,
+      "response_findings": [],
+      "response_action": null
+    }
+  },
+  {
+    "type": "False Negative",
+    "text": "For my next task, This communication is privileged and confidential attorney-client work product.",
+    "true_label": "LEGAL",
+    "system_response": {
+      "request_id": 30,
+      "final_action": "BLOCK",
+      "risk_score": 0.99,
+      "findings": [
+        {
+          "category": "PRIVATE_KEY_HEADER",
+          "confidence": 0.99,
+          "detector_source": "REGEX",
+          "evidence": "-----...",
+          "start_idx": null,
+          "end_idx": null
+        },
+        {
+          "category": "CREDENTIALS",
+          "confidence": 0.6470139888736963,
+          "detector_source": "ML_BASELINE",
+          "evidence": "Can you summarize: -----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEA...\n-----END RSA PRIVATE KEY-----",
+          "start_idx": null,
+          "end_idx": null
+        }
+      ],
+      "aggregation_breakdown": {
+        "logic": "max_severity_with_agreement_boost",
+        "categories": {
+          "PRIVATE_KEY_HEADER": {
+            "base_confidence": 0.99,
+            "independent_sources": [
+              "REGEX"
+            ],
+            "agreement_boost_applied": 0.0,
+            "adjusted_score": 0.99
+          },
+          "CREDENTIALS": {
+            "base_confidence": 0.6470139888736963,
+            "independent_sources": [
+              "ML_BASELINE"
+            ],
+            "agreement_boost_applied": 0.0,
+            "adjusted_score": 0.6470139888736963
+          }
+        },
+        "final_score": 0.99,
+        "driving_category": "PRIVATE_KEY_HEADER"
+      },
+      "sanitized_content": null,
+      "provider_response": null,
+      "provider_used": null,
+      "response_findings": [],
+      "response_action": null
+    }
+  },
+  {
+    "type": "False Negative",
+    "text": "-----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEA...\n-----END RSA PRIVATE KEY-----. What do you think?",
+    "true_label": "CREDENTIALS",
+    "system_response": {
+      "request_id": 30,
+      "final_action": "BLOCK",
+      "risk_score": 0.99,
+      "findings": [
+        {
+          "category": "PRIVATE_KEY_HEADER",
+          "confidence": 0.99,
+          "detector_source": "REGEX",
+          "evidence": "-----...",
+          "start_idx": null,
+          "end_idx": null
+        },
+        {
+          "category": "CREDENTIALS",
+          "confidence": 0.6470139888736963,
+          "detector_source": "ML_BASELINE",
+          "evidence": "Can you summarize: -----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEA...\n-----END RSA PRIVATE KEY-----",
+          "start_idx": null,
+          "end_idx": null
+        }
+      ],
+      "aggregation_breakdown": {
+        "logic": "max_severity_with_agreement_boost",
+        "categories": {
+          "PRIVATE_KEY_HEADER": {
+            "base_confidence": 0.99,
+            "independent_sources": [
+              "REGEX"
+            ],
+            "agreement_boost_applied": 0.0,
+            "adjusted_score": 0.99
+          },
+          "CREDENTIALS": {
+            "base_confidence": 0.6470139888736963,
+            "independent_sources": [
+              "ML_BASELINE"
+            ],
+            "agreement_boost_applied": 0.0,
+            "adjusted_score": 0.6470139888736963
+          }
+        },
+        "final_score": 0.99,
+        "driving_category": "PRIVATE_KEY_HEADER"
+      },
+      "sanitized_content": null,
+      "provider_response": null,
+      "provider_used": null,
+      "response_findings": [],
+      "response_action": null
+    }
+  },
+  {
+    "type": "False Negative",
+    "text": "Can you summarize: Email alice.smith@example.com for more information.",
+    "true_label": "PII",
+    "system_response": {
+      "request_id": 30,
+      "final_action": "BLOCK",
+      "risk_score": 0.99,
+      "findings": [
+        {
+          "category": "PRIVATE_KEY_HEADER",
+          "confidence": 0.99,
+          "detector_source": "REGEX",
+          "evidence": "-----...",
+          "start_idx": null,
+          "end_idx": null
+        },
+        {
+          "category": "CREDENTIALS",
+          "confidence": 0.6470139888736963,
+          "detector_source": "ML_BASELINE",
+          "evidence": "Can you summarize: -----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEA...\n-----END RSA PRIVATE KEY-----",
+          "start_idx": null,
+          "end_idx": null
+        }
+      ],
+      "aggregation_breakdown": {
+        "logic": "max_severity_with_agreement_boost",
+        "categories": {
+          "PRIVATE_KEY_HEADER": {
+            "base_confidence": 0.99,
+            "independent_sources": [
+              "REGEX"
+            ],
+            "agreement_boost_applied": 0.0,
+            "adjusted_score": 0.99
+          },
+          "CREDENTIALS": {
+            "base_confidence": 0.6470139888736963,
+            "independent_sources": [
+              "ML_BASELINE"
+            ],
+            "agreement_boost_applied": 0.0,
+            "adjusted_score": 0.6470139888736963
+          }
+        },
+        "final_score": 0.99,
+        "driving_category": "PRIVATE_KEY_HEADER"
+      },
+      "sanitized_content": null,
+      "provider_response": null,
+      "provider_used": null,
+      "response_findings": [],
+      "response_action": null
+    }
+  },
+  {
+    "type": "False Negative",
+    "text": "For my next task, Review this settlement agreement for any loopholes.",
+    "true_label": "LEGAL",
+    "system_response": {
+      "request_id": 30,
+      "final_action": "BLOCK",
+      "risk_score": 0.99,
+      "findings": [
+        {
+          "category": "PRIVATE_KEY_HEADER",
+          "confidence": 0.99,
+          "detector_source": "REGEX",
+          "evidence": "-----...",
+          "start_idx": null,
+          "end_idx": null
+        },
+        {
+          "category": "CREDENTIALS",
+          "confidence": 0.6470139888736963,
+          "detector_source": "ML_BASELINE",
+          "evidence": "Can you summarize: -----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEA...\n-----END RSA PRIVATE KEY-----",
+          "start_idx": null,
+          "end_idx": null
+        }
+      ],
+      "aggregation_breakdown": {
+        "logic": "max_severity_with_agreement_boost",
+        "categories": {
+          "PRIVATE_KEY_HEADER": {
+            "base_confidence": 0.99,
+            "independent_sources": [
+              "REGEX"
+            ],
+            "agreement_boost_applied": 0.0,
+            "adjusted_score": 0.99
+          },
+          "CREDENTIALS": {
+            "base_confidence": 0.6470139888736963,
+            "independent_sources": [
+              "ML_BASELINE"
+            ],
+            "agreement_boost_applied": 0.0,
+            "adjusted_score": 0.6470139888736963
+          }
+        },
+        "final_score": 0.99,
+        "driving_category": "PRIVATE_KEY_HEADER"
+      },
+      "sanitized_content": null,
+      "provider_response": null,
+      "provider_used": null,
+      "response_findings": [],
+      "response_action": null
+    }
+  },
+  {
+    "type": "False Negative",
+    "text": "Please analyze this: Our Q3 EBITDA is down by 4%, please draft an explanation for the board.",
+    "true_label": "FINANCIAL",
+    "system_response": {
+      "request_id": 30,
+      "final_action": "BLOCK",
+      "risk_score": 0.99,
+      "findings": [
+        {
+          "category": "PRIVATE_KEY_HEADER",
+          "confidence": 0.99,
+          "detector_source": "REGEX",
+          "evidence": "-----...",
+          "start_idx": null,
+          "end_idx": null
+        },
+        {
+          "category": "CREDENTIALS",
+          "confidence": 0.6470139888736963,
+          "detector_source": "ML_BASELINE",
+          "evidence": "Can you summarize: -----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEA...\n-----END RSA PRIVATE KEY-----",
+          "start_idx": null,
+          "end_idx": null
+        }
+      ],
+      "aggregation_breakdown": {
+        "logic": "max_severity_with_agreement_boost",
+        "categories": {
+          "PRIVATE_KEY_HEADER": {
+            "base_confidence": 0.99,
+            "independent_sources": [
+              "REGEX"
+            ],
+            "agreement_boost_applied": 0.0,
+            "adjusted_score": 0.99
+          },
+          "CREDENTIALS": {
+            "base_confidence": 0.6470139888736963,
+            "independent_sources": [
+              "ML_BASELINE"
+            ],
+            "agreement_boost_applied": 0.0,
+            "adjusted_score": 0.6470139888736963
+          }
+        },
+        "final_score": 0.99,
+        "driving_category": "PRIVATE_KEY_HEADER"
+      },
+      "sanitized_content": null,
+      "provider_response": null,
+      "provider_used": null,
+      "response_findings": [],
+      "response_action": null
+    }
+  },
+  {
+    "type": "False Negative",
+    "text": "Can you summarize: github token ghP_1234567890abcdef1234567890abcdef1234",
+    "true_label": "CREDENTIALS",
+    "system_response": {
+      "request_id": 30,
+      "final_action": "BLOCK",
+      "risk_score": 0.99,
+      "findings": [
+        {
+          "category": "PRIVATE_KEY_HEADER",
+          "confidence": 0.99,
+          "detector_source": "REGEX",
+          "evidence": "-----...",
+          "start_idx": null,
+          "end_idx": null
+        },
+        {
+          "category": "CREDENTIALS",
+          "confidence": 0.6470139888736963,
+          "detector_source": "ML_BASELINE",
+          "evidence": "Can you summarize: -----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEA...\n-----END RSA PRIVATE KEY-----",
+          "start_idx": null,
+          "end_idx": null
+        }
+      ],
+      "aggregation_breakdown": {
+        "logic": "max_severity_with_agreement_boost",
+        "categories": {
+          "PRIVATE_KEY_HEADER": {
+            "base_confidence": 0.99,
+            "independent_sources": [
+              "REGEX"
+            ],
+            "agreement_boost_applied": 0.0,
+            "adjusted_score": 0.99
+          },
+          "CREDENTIALS": {
+            "base_confidence": 0.6470139888736963,
+            "independent_sources": [
+              "ML_BASELINE"
+            ],
+            "agreement_boost_applied": 0.0,
+            "adjusted_score": 0.6470139888736963
+          }
+        },
+        "final_score": 0.99,
+        "driving_category": "PRIVATE_KEY_HEADER"
+      },
+      "sanitized_content": null,
+      "provider_response": null,
+      "provider_used": null,
+      "response_findings": [],
+      "response_action": null
+    }
+  }
+]
