@@ -2,12 +2,10 @@ import pytest
 from fastapi.testclient import TestClient
 from backend.main import app
 
-client = TestClient(app)
-
 # In a real environment, we'd mock the database and LLM calls
 # For these tests, we assume the test setup mocks the dependencies appropriately
 
-def test_prompt_injection_detection():
+def test_prompt_injection_detection(client):
     payload = {
         "user_id": 1,
         "destination_id": 1,
@@ -18,7 +16,7 @@ def test_prompt_injection_detection():
     response = client.post("/api/v1/analyze/prompt", json=payload)
     assert response.status_code in [200, 401] # 401 if auth is strictly enforced without mock
 
-def test_obfuscated_secrets():
+def test_obfuscated_secrets(client):
     payload = {
         "user_id": 1,
         "destination_id": 1,

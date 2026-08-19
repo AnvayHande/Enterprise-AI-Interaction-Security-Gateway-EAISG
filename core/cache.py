@@ -8,15 +8,20 @@ from cachetools import TTLCache
 # In a real environment, this should wrap Redis operations.
 _local_cache = TTLCache(maxsize=10000, ttl=3600)
 
+def serialize_for_cache(obj):
+    if hasattr(obj, '__table__'): # Identifies a SQLAlchemy model
+        return f"{obj.__class__.__name__}:{getattr(obj, 'id', None)}"
+    return str(obj)
+
 def generate_cache_key(prefix: str, *args, **kwargs) -> str:
     """Generate a consistent hash key for the given arguments."""
     # Convert args/kwargs to a JSON string. Sort keys for consistency.
     try:
-        payload = json.dumps({"args": args, "kwargs": kwargs}, sort_keys=True, default=str)
+        payload = json.dumps({"args": args, "kwargs": kwargs}, sort_keys=True, default=serialize_for_cache)
         hash_val = hashlib.sha256(payload.encode("utf-8")).hexdigest()
         return f"{prefix}:{hash_val}"
     except TypeError:
-        # Fallback if args contain non-serializable objects (like SQLAlchemy Session)
+        # Fallback if args contain non-serializable objects
         return None
 
 def cached(prefix: str, ttl_seconds: int = 3600):

@@ -1,15 +1,28 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-
-const dummyUsers = [
-  { username: "dev@example.com", department: "Engineering", requests: 154, avgRisk: 0.12 },
-  { username: "sales@example.com", department: "Sales", requests: 89, avgRisk: 0.05 },
-  { username: "hr@example.com", department: "HR", requests: 42, avgRisk: 0.88 },
-  { username: "eng@example.com", department: "Engineering", requests: 312, avgRisk: 0.45 },
-];
+import { api } from '../lib/api';
 
 export function Users() {
+  const [users, setUsers] = useState<{ username: string; total_requests: number; avg_risk: number }[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const data = await api.getUsersRisk(30);
+        setUsers(data);
+      } catch (err) {
+        console.error('Failed to load user risks', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUsers();
+  }, []);
+
+  if (loading) return <div>Loading...</div>;
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -29,13 +42,13 @@ export function Users() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {dummyUsers.map((user) => (
+            {users.map((user) => (
               <TableRow key={user.username}>
                 <TableCell className="font-medium">{user.username}</TableCell>
-                <TableCell>{user.department}</TableCell>
-                <TableCell className="text-right">{user.requests}</TableCell>
-                <TableCell className={`text-right font-medium ${user.avgRisk > 0.7 ? 'text-destructive' : user.avgRisk > 0.4 ? 'text-amber-500' : 'text-green-500'}`}>
-                  {user.avgRisk.toFixed(2)}
+                <TableCell>N/A</TableCell> {/* Backend endpoint doesn't return department currently */}
+                <TableCell className="text-right">{user.total_requests}</TableCell>
+                <TableCell className={`text-right font-medium ${user.avg_risk > 0.7 ? 'text-destructive' : user.avg_risk > 0.4 ? 'text-amber-500' : 'text-green-500'}`}>
+                  {user.avg_risk.toFixed(2)}
                 </TableCell>
               </TableRow>
             ))}

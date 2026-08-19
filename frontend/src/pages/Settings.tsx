@@ -1,9 +1,34 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { api } from '../lib/api';
+
+interface Destination {
+  id: number;
+  name: string;
+  provider: string;
+  trust_level: string;
+}
 
 export function Settings() {
+  const [destinations, setDestinations] = useState<Destination[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDestinations = async () => {
+      try {
+        const data = await api.getDestinations();
+        setDestinations(data);
+      } catch (err) {
+        console.error('Failed to load destinations', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDestinations();
+  }, []);
+
   return (
     <div className="space-y-6">
       <div>
@@ -25,23 +50,26 @@ export function Settings() {
               <CardDescription>Manage where prompts are allowed to be routed.</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between border-b pb-4">
-                  <div>
-                    <p className="font-medium">OpenAI (GPT-4)</p>
-                    <p className="text-sm text-muted-foreground">Provider: openai | Trust: PUBLIC</p>
-                  </div>
-                  <Button variant="outline" size="sm">Edit</Button>
+              {loading ? (
+                <div>Loading...</div>
+              ) : (
+                <div className="space-y-4">
+                  {destinations.length > 0 ? (
+                    destinations.map((dest) => (
+                      <div key={dest.id} className="flex items-center justify-between border-b pb-4">
+                        <div>
+                          <p className="font-medium">{dest.name}</p>
+                          <p className="text-sm text-muted-foreground">Provider: {dest.provider} | Trust: {dest.trust_level}</p>
+                        </div>
+                        <Button variant="outline" size="sm">Edit</Button>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No destinations configured.</p>
+                  )}
+                  <Button className="mt-4">Add Destination</Button>
                 </div>
-                <div className="flex items-center justify-between border-b pb-4">
-                  <div>
-                    <p className="font-medium">Internal Llama 3</p>
-                    <p className="text-sm text-muted-foreground">Provider: local | Trust: INTERNAL</p>
-                  </div>
-                  <Button variant="outline" size="sm">Edit</Button>
-                </div>
-                <Button className="mt-4">Add Destination</Button>
-              </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

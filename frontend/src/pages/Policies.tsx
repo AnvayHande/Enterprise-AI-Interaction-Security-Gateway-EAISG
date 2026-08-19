@@ -1,16 +1,38 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { api } from '../lib/api';
 
-const dummyPolicies = [
-  { id: 1, name: "Block AWS Keys", priority: 10, enabled: true, action: "BLOCK" },
-  { id: 2, name: "Sanitize PII", priority: 20, enabled: true, action: "SANITIZE" },
-  { id: 3, name: "Warn on Proprietary Code", priority: 30, enabled: true, action: "WARN" },
-  { id: 4, name: "Default Allow", priority: 1000, enabled: true, action: "ALLOW" },
-];
+interface Policy {
+  id: number;
+  name: string;
+  description: string;
+  priority: number;
+  enabled: boolean;
+  action: string;
+}
 
 export function Policies() {
+  const [policies, setPolicies] = useState<Policy[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPolicies = async () => {
+      try {
+        const data = await api.getPolicies();
+        setPolicies(data);
+      } catch (err) {
+        console.error('Failed to load policies', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPolicies();
+  }, []);
+
+  if (loading) return <div>Loading...</div>;
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -28,7 +50,7 @@ export function Policies() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {dummyPolicies.map((policy) => (
+            {policies.map((policy) => (
               <TableRow key={policy.id}>
                 <TableCell className="font-medium">{policy.priority}</TableCell>
                 <TableCell>{policy.name}</TableCell>
