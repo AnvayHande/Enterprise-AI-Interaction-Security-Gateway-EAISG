@@ -1,0 +1,40 @@
+{
+  "manifest_version": 3,
+  "name": "EAISG Security Gateway",
+  "version": "1.0.0",
+  "description": "Intercepts and secures interactions with public AI platforms.",
+  "action": {
+    "default_popup": "index.html"
+  },
+  "background": {
+    "service_worker": "src/background.ts",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.chatgpt.com/*",
+        "*://*.claude.ai/*",
+        "*://gemini.google.com/*",
+        "*://copilot.microsoft.com/*",
+        "*://*.perplexity.ai/*"
+      ],
+      "js": ["src/content.ts"],
+      "run_at": "document_start"
+    }
+  ],
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage",
+    "webRequest"
+  ],
+  "host_permissions": [
+    "*://*.chatgpt.com/*",
+    "*://*.claude.ai/*",
+    "*://gemini.google.com/*",
+    "*://copilot.microsoft.com/*",
+    "*://*.perplexity.ai/*",
+    "http://127.0.0.1:8000/*"
+  ]
+}
