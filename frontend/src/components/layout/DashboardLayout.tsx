@@ -1,9 +1,9 @@
-import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Shield, LayoutDashboard, List, Target, Users, Settings, FileSearch } from 'lucide-react';
 
 const navigation = [
   { name: 'Overview', href: '/', icon: LayoutDashboard },
+  { name: 'Playground', href: '/playground', icon: Shield },
   { name: 'Requests', href: '/requests', icon: List },
   { name: 'Findings', href: '/findings', icon: FileSearch },
   { name: 'Policies', href: '/policies', icon: Target },

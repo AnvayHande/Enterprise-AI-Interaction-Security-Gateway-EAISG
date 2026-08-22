@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { DashboardLayout } from './components/layout/DashboardLayout';
 import { Overview } from './pages/Overview';
+import { Playground } from './pages/Playground';
 import { Requests } from './pages/Requests';
 import { Findings } from './pages/Findings';
 import { Policies } from './pages/Policies';
@@ -13,6 +14,7 @@ function App() {
       <Routes>
         <Route path="/" element={<DashboardLayout />}>
           <Route index element={<Overview />} />
+          <Route path="playground" element={<Playground />} />
           <Route path="requests" element={<Requests />} />
           <Route path="findings" element={<Findings />} />
           <Route path="policies" element={<Policies />} />
