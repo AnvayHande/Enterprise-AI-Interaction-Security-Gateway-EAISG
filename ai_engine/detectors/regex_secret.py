@@ -11,7 +11,8 @@ class RegexSecretDetector:
             "GENERIC_BEARER_TOKEN": r"(?i)bearer\s+[a-zA-Z0-9_\-\.]{20,}",
             "PRIVATE_KEY_HEADER": r"-----BEGIN (RSA|OPENSSH|DSA|EC|PGP) PRIVATE KEY-----",
             "GITHUB_TOKEN": r"(?i)gh[p|u|s|r]_[A-Za-z0-9_]{36}",
-            "SLACK_TOKEN": r"xox[baprs]-[0-9]{10,13}-[a-zA-Z0-9]{24}"
+            "SLACK_TOKEN": r"xox[baprs]-[0-9]{10,13}-[a-zA-Z0-9]{24}",
+            "GENERIC_API_KEY_CONTEXT": r"(?i)(api[_\s-]?key).{0,10}[a-zA-Z0-9]{15,}"
         }
         
         # Explicit allowlist for known-safe placeholders
@@ -64,7 +65,7 @@ class RegexSecretDetector:
                 })
                 
         # 2. Entropy Check
-        for match in re.finditer(r'\b[a-zA-Z0-9_\-]{20,}\b', text):
+        for match in re.finditer(r'\b[a-zA-Z0-9_\-]{16,}\b', text):
             word = match.group(0)
             if self._is_allowlisted(word):
                 continue
