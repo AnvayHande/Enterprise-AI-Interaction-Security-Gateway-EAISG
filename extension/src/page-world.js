@@ -14,6 +14,126 @@ window.addEventListener('message', (event) => {
   }
 });
 
+function showEaisgAlert(title, message, findings) {
+  const existingModal = document.getElementById('eaisg-alert-modal');
+  if (existingModal) existingModal.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'eaisg-alert-modal';
+  
+  Object.assign(modal.style, {
+    position: 'fixed',
+    top: '0',
+    left: '0',
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(15, 23, 42, 0.6)',
+    backdropFilter: 'blur(8px)',
+    WebkitBackdropFilter: 'blur(8px)',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: '2147483647',
+    fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    opacity: '0',
+    transition: 'opacity 0.3s ease-out'
+  });
+
+  const content = document.createElement('div');
+  Object.assign(content.style, {
+    backgroundColor: '#1e293b',
+    color: '#f8fafc',
+    padding: '32px',
+    borderRadius: '24px',
+    maxWidth: '480px',
+    width: '90%',
+    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1) inset',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '20px',
+    transform: 'translateY(20px) scale(0.95)',
+    transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+    position: 'relative',
+    overflow: 'hidden'
+  });
+
+  const accent = document.createElement('div');
+  Object.assign(accent.style, {
+    position: 'absolute',
+    top: '0',
+    left: '0',
+    right: '0',
+    height: '4px',
+    background: 'linear-gradient(90deg, #ef4444, #f43f5e)',
+    boxShadow: '0 0 20px rgba(244, 63, 94, 0.5)'
+  });
+  content.appendChild(accent);
+
+  let findingsHtml = '';
+  if (findings && Array.isArray(findings) && findings.length > 0) {
+    findingsHtml = `
+      <div style="margin-top: 4px; max-height: 220px; overflow-y: auto; background-color: rgba(15, 23, 42, 0.6); padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+        <h4 style="margin: 0 0 12px 0; color: #94a3b8; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">Detected Policy Violations</h4>
+        <ul style="list-style-type: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px;">
+          ${findings.map(f => `
+            <li style="font-size: 14px; background: rgba(255,255,255,0.03); padding: 12px 16px; border-radius: 8px; border-left: 3px solid #f43f5e; position: relative;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <strong style="color: #e2e8f0; font-weight: 600; letter-spacing: 0.02em;">${f.category}</strong> 
+                <span style="color: #f43f5e; font-size: 11px; font-weight: 700; background: rgba(244,63,94,0.1); padding: 2px 8px; border-radius: 12px;">${(f.confidence * 100).toFixed(0)}% Match</span>
+              </div>
+              ${f.evidence ? `<div style="color: #cbd5e1; word-break: break-all; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 13px; line-height: 1.5; background: rgba(0,0,0,0.2); padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.02);">${f.evidence.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>` : ''}
+            </li>
+          `).join('')}
+        </ul>
+      </div>
+    `;
+  }
+
+  const mainContentHtml = `
+    <div style="display: flex; align-items: flex-start; gap: 16px; z-index: 1;">
+      <div style="background: rgba(244, 63, 94, 0.1); padding: 12px; border-radius: 16px; color: #f43f5e;">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+        </svg>
+      </div>
+      <div>
+        <h2 style="margin: 0 0 8px 0; font-size: 22px; color: #f8fafc; font-weight: 700; letter-spacing: -0.01em;">${title}</h2>
+        <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #94a3b8;">${message}</p>
+      </div>
+    </div>
+    ${findingsHtml}
+    <div style="display: flex; justify-content: flex-end; margin-top: 8px;">
+      <button id="eaisg-alert-close" style="background: linear-gradient(135deg, #3b82f6, #2563eb); color: #ffffff; border: none; padding: 12px 28px; border-radius: 9999px; font-weight: 600; font-size: 15px; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.39);">
+        Acknowledge
+      </button>
+    </div>
+  `;
+  
+  content.insertAdjacentHTML('beforeend', mainContentHtml);
+  modal.appendChild(content);
+  document.body.appendChild(modal);
+
+  requestAnimationFrame(() => {
+    modal.style.opacity = '1';
+    content.style.transform = 'translateY(0) scale(1)';
+  });
+
+  const closeBtn = document.getElementById('eaisg-alert-close');
+  closeBtn.addEventListener('mouseover', () => {
+    closeBtn.style.transform = 'translateY(-1px)';
+    closeBtn.style.boxShadow = '0 6px 20px rgba(37, 99, 235, 0.5)';
+  });
+  closeBtn.addEventListener('mouseout', () => {
+    closeBtn.style.transform = 'translateY(0)';
+    closeBtn.style.boxShadow = '0 4px 14px 0 rgba(37, 99, 235, 0.39)';
+  });
+  closeBtn.addEventListener('click', () => {
+    modal.style.opacity = '0';
+    content.style.transform = 'translateY(10px) scale(0.95)';
+    setTimeout(() => modal.remove(), 300);
+  });
+}
+
 function checkPromptWithEAISG(prompt) {
   return new Promise((resolve) => {
     const id = Math.random().toString(36).substring(7);
@@ -51,8 +171,8 @@ document.addEventListener('change', async (event) => {
     const file = target.files[0];
     console.log('[EAISG] Intercepted file selection (change event):', file.name);
     const eaisgResult = await checkFileWithEAISG(file);
-    if (eaisgResult.success && eaisgResult.data && eaisgResult.data.action === 'BLOCK') {
-      alert('EAISG Blocked this file due to security policy violations.\n\nFindings: ' + JSON.stringify(eaisgResult.data.findings));
+    if (eaisgResult.success && eaisgResult.data && (eaisgResult.data.final_action || eaisgResult.data.action) === 'BLOCK') {
+      showEaisgAlert('EAISG Security Alert', 'This file was blocked due to security policy violations.', eaisgResult.data.findings);
       target.value = ''; // Clear the selected file
     }
   }
@@ -64,8 +184,8 @@ document.addEventListener('drop', async (event) => {
     const file = event.dataTransfer.files[0];
     console.log('[EAISG] Intercepted file drop:', file.name);
     const eaisgResult = await checkFileWithEAISG(file);
-    if (eaisgResult.success && eaisgResult.data && eaisgResult.data.action === 'BLOCK') {
-      alert('EAISG Blocked the dropped file due to security policy violations.\n\nPlease remove the file from the chat.');
+    if (eaisgResult.success && eaisgResult.data && (eaisgResult.data.final_action || eaisgResult.data.action) === 'BLOCK') {
+      showEaisgAlert('EAISG Security Alert', 'The dropped file was blocked due to security policy violations. Please remove it from the chat.', eaisgResult.data.findings);
       // Cannot easily reverse a drop event asynchronously, so we warn the user.
     }
   }
@@ -129,10 +249,10 @@ window.fetch = async (...args) => {
         console.log('[EAISG] Gateway response:', eaisgResult);
         
         if (eaisgResult.success && eaisgResult.data) {
-          const action = eaisgResult.data.action; // ALLOW, SANITIZE, BLOCK
+          const action = eaisgResult.data.final_action || eaisgResult.data.action; // ALLOW, SANITIZE, BLOCK
 
           if (action === 'BLOCK') {
-            alert('EAISG Blocked this prompt due to security policy violations.\n\nFindings: ' + JSON.stringify(eaisgResult.data.findings));
+            showEaisgAlert('EAISG Security Alert', 'This prompt was blocked due to security policy violations.', eaisgResult.data.findings);
             return Promise.reject(new Error('EAISG Blocked Request'));
           } else if (action === 'SANITIZE' && eaisgResult.data.sanitized_content) {
             // Replace the prompt with the sanitized version

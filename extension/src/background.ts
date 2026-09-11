@@ -50,6 +50,16 @@ chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
       analyzeFile(request.payload, sendResponse);
       return true;
     }
+  } else if (request.type === 'GET_RECENT_ACTIVITY') {
+    if (!authToken) {
+      loginToBackend().then(() => {
+        getRecentActivity(sendResponse);
+      });
+      return true;
+    } else {
+      getRecentActivity(sendResponse);
+      return true;
+    }
   }
 });
 
@@ -115,6 +125,42 @@ async function analyzePrompt(prompt: string, sendResponse: (response: any) => vo
     sendResponse({ success: true, data });
   } catch (error) {
     console.error('Analyze prompt error:', error);
+    sendResponse({ success: false, error: String(error) });
+  }
+}
+
+async function getRecentActivity(sendResponse: (response: any) => void) {
+  try {
+    const response = await fetch("http://127.0.0.1:8000/api/v1/dashboard/requests?limit=5", {
+      headers: { "Authorization": `Bearer ${authToken}` }
+    });
+    
+    // Also fetch destinations to map destination_id to provider name
+    const destResponse = await fetch("http://127.0.0.1:8000/api/v1/settings/destinations", {
+      headers: { "Authorization": `Bearer ${authToken}` }
+    });
+    
+    if (!response.ok || !destResponse.ok) {
+      throw new Error("Failed to fetch data");
+    }
+    
+    const requests = await response.json();
+    const destinations = await destResponse.json();
+    
+    const destMap: Record<number, any> = {};
+    for (const d of destinations) {
+      destMap[d.id] = d;
+    }
+    
+    // Merge data
+    const merged = requests.map((r: any) => ({
+      ...r,
+      destination: destMap[r.destination_id] || { name: "Unknown", provider: "Unknown" }
+    }));
+    
+    sendResponse({ success: true, data: merged });
+  } catch (error) {
+    console.error("Get recent activity error:", error);
     sendResponse({ success: false, error: String(error) });
   }
 }
