@@ -92,3 +92,41 @@ def get_users_risk(
             "avg_risk": round(u[2] or 0.0, 2)
         } for u in user_risks
     ]
+
+@router.get("/requests/{request_id}/findings")
+def get_request_findings(
+    request_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    findings = db.query(Finding).filter(Finding.request_id == request_id).all()
+    return [
+        {
+            "id": f.id,
+            "category": f.category,
+            "severity": f.severity,
+            "description": f.description
+        } for f in findings
+    ]
+
+@router.get("/critical")
+def get_critical_requests(
+    limit: int = 5,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    requests = db.query(Request).filter(
+        Request.final_action == "BLOCK"
+    ).order_by(desc(Request.created_at)).limit(limit).all()
+    
+    return [
+        {
+            "id": r.id,
+            "user_id": r.user_id,
+            "destination_id": r.destination_id,
+            "status": r.status,
+            "final_action": r.final_action,
+            "risk_score": r.risk_score,
+            "created_at": r.created_at
+        } for r in requests
+    ]

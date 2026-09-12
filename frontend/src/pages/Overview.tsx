@@ -9,16 +9,15 @@ export function Overview() {
     decisions: Record<string, number>;
     average_risk: number;
   } | null>(null);
+  const [criticalEvents, setCriticalEvents] = useState<any[]>([]);
 
   useEffect(() => {
-    // Basic mock login for development purposes if no token exists
     const init = async () => {
       try {
-        if (!localStorage.getItem('access_token')) {
-          await api.login('admin', 'admin'); // Ensure the backend has an admin user or handle failure gracefully
-        }
         const stats = await api.getOverviewStats(7);
         setData(stats);
+        const events = await api.getCriticalEvents(5);
+        setCriticalEvents(events);
       } catch (err) {
         console.error('Failed to load overview stats', err);
       }
@@ -104,8 +103,22 @@ export function Overview() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">Detailed event logs will appear here based on the Audit Trail.</p>
-              {/* Future: fetch recent critical events separately if an endpoint provides them */}
+              {criticalEvents.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No critical events recently.</p>
+              ) : (
+                criticalEvents.map(event => (
+                  <div key={event.id} className="flex items-center space-x-4 rounded-md border p-4">
+                    <div className="flex-1 space-y-1">
+                      <p className="text-sm font-medium leading-none">
+                        Request Blocked (Risk: {event.risk_score.toFixed(2)})
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        User ID {event.user_id} &bull; {new Date(event.created_at).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </CardContent>
         </Card>
