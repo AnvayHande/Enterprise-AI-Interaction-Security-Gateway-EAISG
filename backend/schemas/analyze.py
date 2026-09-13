@@ -10,6 +10,7 @@ class FindingSchema(BaseModel):
     confidence: float
     detector_source: str
     evidence: Optional[str] = None
+    explanation: Optional[str] = None
     start_idx: Optional[int] = None
     end_idx: Optional[int] = None
 

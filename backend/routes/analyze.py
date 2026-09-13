@@ -23,6 +23,7 @@ from ml.classifier import MLClassifier
 
 from policy_engine.evaluator import PolicyEvaluator
 from file_processor.pipeline import FileProcessingPipeline
+from backend.utils.explanations import get_finding_explanation
 
 # Agents
 from ai_engine.agents.graph import GraphOrchestrator
@@ -65,7 +66,8 @@ def analyze_prompt(
     if cached_request:
         cached_findings = db.query(DBFinding).filter(DBFinding.request_id == cached_request.id).all()
         response_findings = [FindingSchema(
-            category=f.category, confidence=f.confidence, evidence=f.evidence, detector_source=f.detector_source
+            category=f.category, confidence=f.confidence, evidence=f.evidence, detector_source=f.detector_source,
+            explanation=get_finding_explanation(f.category)
         ) for f in cached_findings]
         
         return AnalyzeResponse(
@@ -181,6 +183,7 @@ def analyze_prompt(
         f_out = f.copy()
         if "start_idx" in f_out: del f_out["start_idx"]
         if "end_idx" in f_out: del f_out["end_idx"]
+        f_out["explanation"] = get_finding_explanation(f_out["category"])
         response_findings.append(FindingSchema(**f_out))
         
     # 5. Audit Logging
@@ -258,7 +261,8 @@ async def analyze_file(
     if cached_request:
         cached_findings = db.query(DBFinding).filter(DBFinding.request_id == cached_request.id).all()
         response_findings = [FindingSchema(
-            category=f.category, confidence=f.confidence, evidence=f.evidence, detector_source=f.detector_source
+            category=f.category, confidence=f.confidence, evidence=f.evidence, detector_source=f.detector_source,
+            explanation=get_finding_explanation(f.category)
         ) for f in cached_findings]
         
         return AnalyzeResponse(
@@ -374,6 +378,7 @@ async def analyze_file(
         f_out = f.copy()
         if "start_idx" in f_out: del f_out["start_idx"]
         if "end_idx" in f_out: del f_out["end_idx"]
+        f_out["explanation"] = get_finding_explanation(f_out["category"])
         response_findings.append(FindingSchema(**f_out))
         
     # 5. Audit Logging

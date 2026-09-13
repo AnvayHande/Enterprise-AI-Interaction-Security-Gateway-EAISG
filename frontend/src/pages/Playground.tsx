@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select-native";
 import { Progress } from "@/components/ui/progress";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+
 import { api } from '../lib/api';
 import {
   Shield,
@@ -18,9 +18,9 @@ import {
   RotateCcw,
   ChevronRight,
   AlertTriangle,
-  Eye,
   Bot,
 } from 'lucide-react';
+import { PolicyViolationsCard } from '../components/PolicyViolationsCard';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -29,6 +29,7 @@ interface Finding {
   confidence: number;
   detector_source: string;
   evidence?: string;
+  explanation?: string;
 }
 
 interface AnalyzeResult {
@@ -333,58 +334,18 @@ export function Playground() {
                 </CardContent>
               </Card>
 
-              {/* Findings Table */}
+              {/* Findings */}
               {result.findings.length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-sm font-medium flex items-center gap-2">
-                      <Eye className="w-4 h-4" /> Findings Detail
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="rounded-md border">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Category</TableHead>
-                            <TableHead>Confidence</TableHead>
-                            <TableHead>Detector</TableHead>
-                            <TableHead>Evidence</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {result.findings.map((f, i) => (
-                            <TableRow key={i}>
-                              <TableCell>
-                                <Badge variant="outline" className="font-mono text-xs">
-                                  {f.category}
-                                </Badge>
-                              </TableCell>
-                              <TableCell>
-                                <span className={`font-medium tabular-nums ${
-                                  f.confidence >= 0.9 ? 'text-red-500' :
-                                  f.confidence >= 0.7 ? 'text-amber-500' : 'text-muted-foreground'
-                                }`}>
-                                  {(f.confidence * 100).toFixed(0)}%
-                                </span>
-                              </TableCell>
-                              <TableCell>
-                                <span className="text-xs text-muted-foreground font-mono">
-                                  {f.detector_source}
-                                </span>
-                              </TableCell>
-                              <TableCell>
-                                <code className="text-xs bg-muted px-2 py-1 rounded">
-                                  {f.evidence || '—'}
-                                </code>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  </CardContent>
-                </Card>
+                <PolicyViolationsCard
+                  title="Detected Policy Violations"
+                  description={`The following sensitive information was detected across ${new Set(result.findings.map(f => f.detector_source)).size} detector(s).`}
+                  violations={result.findings.map(f => ({
+                    type: f.category,
+                    confidence: Math.round(f.confidence * 100),
+                    match: f.evidence || '—',
+                    explanation: f.explanation
+                  }))}
+                />
               )}
 
               {/* Aggregation Breakdown */}
@@ -454,49 +415,18 @@ export function Playground() {
 
               {/* Response Findings */}
               {result.response_findings && result.response_findings.length > 0 && (
-                <Card className="border-amber-500/30">
-                  <CardHeader>
-                    <CardTitle className="text-sm font-medium flex items-center gap-2">
-                      <AlertTriangle className="w-4 h-4 text-amber-500" /> Response Analysis
-                    </CardTitle>
-                    <CardDescription>
-                      The AI provider's response was also scanned.
-                      {result.response_action && (
-                        <span className="ml-2">
-                          Action: <ActionBadge action={result.response_action} />
-                        </span>
-                      )}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="rounded-md border">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Category</TableHead>
-                            <TableHead>Confidence</TableHead>
-                            <TableHead>Detector</TableHead>
-                            <TableHead>Evidence</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {result.response_findings.map((f, i) => (
-                            <TableRow key={i}>
-                              <TableCell>
-                                <Badge variant="outline" className="font-mono text-xs">{f.category}</Badge>
-                              </TableCell>
-                              <TableCell className="tabular-nums">{(f.confidence * 100).toFixed(0)}%</TableCell>
-                              <TableCell className="font-mono text-xs">{f.detector_source}</TableCell>
-                              <TableCell>
-                                <code className="text-xs bg-muted px-2 py-1 rounded">{f.evidence || '—'}</code>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  </CardContent>
-                </Card>
+                <div className="mt-4">
+                  <PolicyViolationsCard
+                    title="Response Analysis Violations"
+                    description="The AI provider's response was also scanned and flagged."
+                    violations={result.response_findings.map(f => ({
+                      type: f.category,
+                      confidence: Math.round(f.confidence * 100),
+                      match: f.evidence || '—',
+                      explanation: f.explanation
+                    }))}
+                  />
+                </div>
               )}
             </div>
           )}
