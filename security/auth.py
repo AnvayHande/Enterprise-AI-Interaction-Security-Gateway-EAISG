@@ -2,6 +2,7 @@ import os
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 import jwt
+import uuid
 from passlib.context import CryptContext
 
 # Secret keys should be loaded from environment variables in production
@@ -32,7 +33,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
 def create_refresh_token(data: dict) -> str:
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
-    to_encode.update({"exp": expire, "type": "refresh"})
+    to_encode.update({"exp": expire, "type": "refresh", "jti": str(uuid.uuid4())})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 

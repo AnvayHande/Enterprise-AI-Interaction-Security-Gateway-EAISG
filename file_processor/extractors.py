@@ -5,6 +5,8 @@ import openpyxl
 from fastapi import HTTPException
 import logging
 
+logging.getLogger("pdfminer").setLevel(logging.ERROR)
+
 logger = logging.getLogger(__name__)
 
 class FileExtractor:
