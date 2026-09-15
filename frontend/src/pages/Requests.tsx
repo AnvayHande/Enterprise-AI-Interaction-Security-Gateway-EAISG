@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { api } from '../lib/api';
 
 interface RequestLog {
-  id: string;
+  id: string | number;
   user_id: number;
   destination_id: number;
   status: string;
@@ -16,10 +16,19 @@ interface RequestLog {
   created_at: string;
 }
 
+interface Finding {
+  id: number;
+  category: string;
+  severity: string;
+  description: string;
+}
+
 export function Requests() {
   const [requests, setRequests] = useState<RequestLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedRequest, setSelectedRequest] = useState<RequestLog | null>(null);
+  const [findings, setFindings] = useState<Finding[]>([]);
+  const [loadingFindings, setLoadingFindings] = useState(false);
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -34,6 +43,18 @@ export function Requests() {
     };
     fetchRequests();
   }, []);
+
+  useEffect(() => {
+    if (selectedRequest) {
+      setLoadingFindings(true);
+      api.getRequestFindings(String(selectedRequest.id))
+        .then(data => setFindings(data))
+        .catch(err => console.error('Failed to load findings', err))
+        .finally(() => setLoadingFindings(false));
+    } else {
+      setFindings([]);
+    }
+  }, [selectedRequest]);
 
   if (loading) return <div>Loading...</div>;
 
@@ -60,7 +81,7 @@ export function Requests() {
           <TableBody>
             {requests.map((req) => (
               <TableRow key={req.id}>
-                <TableCell className="font-medium">{req.id.substring(0, 8)}...</TableCell>
+                <TableCell className="font-medium" title={String(req.id)}>{String(req.id).substring(0, 8)}{String(req.id).length > 8 ? '...' : ''}</TableCell>
                 <TableCell>{req.user_id}</TableCell>
                 <TableCell>{new Date(req.created_at).toLocaleString()}</TableCell>
                 <TableCell>{req.risk_score.toFixed(2)}</TableCell>
@@ -79,7 +100,7 @@ export function Requests() {
       </div>
 
       <Dialog open={!!selectedRequest} onOpenChange={(open: boolean) => !open && setSelectedRequest(null)}>
-        <DialogContent>
+        <DialogContent className="max-w-xl">
           <DialogHeader>
             <DialogTitle>Request Details</DialogTitle>
           </DialogHeader>
@@ -88,7 +109,7 @@ export function Requests() {
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="font-semibold text-muted-foreground">Request ID</p>
-                  <p>{selectedRequest.id}</p>
+                  <p>{String(selectedRequest.id)}</p>
                 </div>
                 <div>
                   <p className="font-semibold text-muted-foreground">User ID</p>
@@ -114,10 +135,19 @@ export function Requests() {
                 </div>
               </div>
               <div>
-                <p className="font-semibold text-muted-foreground text-sm">Audit Trail / Findings</p>
-                <div className="mt-2 text-sm bg-muted p-2 rounded-md">
-                  {/* Real app would fetch specific findings for this request ID here */}
-                  No detailed findings available in preview.
+                <p className="font-semibold text-muted-foreground text-sm mb-2">Audit Trail / Findings</p>
+                <div className="text-sm bg-muted p-4 rounded-md space-y-2 max-h-40 overflow-y-auto">
+                  {loadingFindings ? (
+                    <p>Loading findings...</p>
+                  ) : findings.length > 0 ? (
+                    findings.map((f, i) => (
+                      <div key={i} className="border-b border-muted-foreground/20 pb-2 last:border-0 last:pb-0">
+                        <span className="font-medium">[{f.severity}]</span> {f.category}: {f.description}
+                      </div>
+                    ))
+                  ) : (
+                    <p>No detailed findings available for this request.</p>
+                  )}
                 </div>
               </div>
             </div>

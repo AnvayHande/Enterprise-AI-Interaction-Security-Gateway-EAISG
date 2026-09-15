@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Shield, LayoutDashboard, List, Target, Users, Settings, FileSearch } from 'lucide-react';
+import { Shield, LayoutDashboard, List, Target, Users, Settings, FileSearch, LogOut } from 'lucide-react';
 
 const navigation = [
   { name: 'Overview', href: '/', icon: LayoutDashboard },
@@ -11,7 +11,11 @@ const navigation = [
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
-export function DashboardLayout() {
+interface DashboardLayoutProps {
+  onLogout?: () => void;
+}
+
+export function DashboardLayout({ onLogout }: DashboardLayoutProps) {
   const location = useLocation();
 
   return (
@@ -44,12 +48,24 @@ export function DashboardLayout() {
             })}
           </ul>
         </nav>
+        {/* Logout button */}
+        <div className="border-t p-3">
+          <button
+            id="logout-button"
+            onClick={onLogout}
+            className="flex items-center w-full px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+          >
+            <LogOut className="w-4 h-4 mr-3" />
+            Sign out
+          </button>
+        </div>
       </div>
 
       {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         <header className="h-16 bg-background border-b flex items-center justify-between px-6">
           <h1 className="text-xl font-semibold">Governance Dashboard</h1>
+          <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">admin</span>
         </header>
         <main className="flex-1 overflow-auto p-6">
           <Outlet />

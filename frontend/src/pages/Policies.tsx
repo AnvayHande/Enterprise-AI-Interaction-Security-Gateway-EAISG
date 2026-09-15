@@ -60,11 +60,21 @@ export function Policies() {
       });
       setOpen(false);
       fetchPolicies();
-      // Reset form
       setFormData({ name: '', description: '', priority: 10, action: 'BLOCK' });
     } catch (err) {
       console.error('Failed to create policy', err);
       alert('Failed to create policy');
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm('Are you sure you want to delete this policy?')) return;
+    try {
+      await api.deletePolicy(id);
+      fetchPolicies();
+    } catch (err) {
+      console.error('Failed to delete policy', err);
+      alert('Failed to delete policy');
     }
   };
 
@@ -141,7 +151,8 @@ export function Policies() {
               <TableHead className="w-[100px]">Priority</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead className="text-right">Action</TableHead>
+              <TableHead>Action</TableHead>
+              <TableHead className="text-right">Controls</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -154,10 +165,13 @@ export function Policies() {
                     {policy.enabled ? 'Enabled' : 'Disabled'}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell>
                   <Badge variant={policy.action === 'BLOCK' ? 'destructive' : policy.action === 'SANITIZE' ? 'default' : policy.action === 'WARN' ? 'secondary' : 'outline'}>
                     {policy.action}
                   </Badge>
+                </TableCell>
+                <TableCell className="text-right">
+                  <Button variant="ghost" size="sm" onClick={() => handleDelete(policy.id)} className="text-red-500 hover:text-red-700">Delete</Button>
                 </TableCell>
               </TableRow>
             ))}
