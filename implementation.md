@@ -4,7 +4,7 @@
 
 This is the maximally detailed, code-free build plan for EAISG. It goes beyond "what to build" into "what to build, why it exists, what breaks if you skip it, what the edge cases are, how it's governed, how it's tested, how it's operated, and how it's evaluated as a piece of research." `learn.md` remains the running log of what was actually implemented, referencing the section numbers below.
 
-> **Golden rule, unchanged:** Build the MVP first, prove the core deterministic pipeline works end-to-end, then layer in files → ML → LangGraph → policy → dashboard → hardening → research evaluation. Depth of planning is not a license to build everything at once.
+**Golden rule, unchanged:** Build the MVP first, prove the core deterministic pipeline works end-to-end, then layer in files → ML → LangGraph → policy → dashboard → hardening → research evaluation. Depth of planning is not a license to build everything at once.
 
 ---
 
