@@ -87,10 +87,10 @@ const EXAMPLE_PROMPTS = [
 
 function ActionBadge({ action }: { action: string }) {
   const config: Record<string, { variant: 'destructive' | 'default' | 'secondary' | 'outline'; icon: React.ReactNode; className: string }> = {
-    BLOCK: { variant: 'destructive', icon: <ShieldX className="w-3 h-3 mr-1" />, className: '' },
-    SANITIZE: { variant: 'default', icon: <ShieldAlert className="w-3 h-3 mr-1" />, className: '' },
-    ALLOW: { variant: 'success', icon: <ShieldCheck className="w-3 h-3 mr-1" />, className: '' },
-    WARN: { variant: 'secondary', icon: <AlertTriangle className="w-3 h-3 mr-1" />, className: '' },
+    BLOCK: { variant: 'destructive', icon: <ShieldX className="w-3 h-3 mr-1" />, className: 'bg-red-600 hover:bg-red-700 text-white' },
+    SANITIZE: { variant: 'default', icon: <ShieldAlert className="w-3 h-3 mr-1" />, className: 'bg-amber-500 hover:bg-amber-600 text-white' },
+    ALLOW: { variant: 'outline', icon: <ShieldCheck className="w-3 h-3 mr-1" />, className: 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-600' },
+    WARN: { variant: 'secondary', icon: <AlertTriangle className="w-3 h-3 mr-1" />, className: 'bg-yellow-500 hover:bg-yellow-600 text-black' },
     FAILED: { variant: 'destructive', icon: <ShieldX className="w-3 h-3 mr-1" />, className: '' },
   };
   const c = config[action] || config.FAILED;

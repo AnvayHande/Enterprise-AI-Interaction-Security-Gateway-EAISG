@@ -166,7 +166,7 @@ export function Policies() {
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  <Badge variant={policy.action === 'BLOCK' ? 'destructive' : policy.action === 'SANITIZE' ? 'default' : policy.action === 'WARN' ? 'secondary' : 'success'}>
+                  <Badge variant={policy.action === 'BLOCK' ? 'destructive' : policy.action === 'SANITIZE' ? 'default' : policy.action === 'WARN' ? 'secondary' : 'outline'}>
                     {policy.action}
                   </Badge>
                 </TableCell>
