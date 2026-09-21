@@ -86,7 +86,7 @@ export function Requests() {
                 <TableCell>{new Date(req.created_at).toLocaleString()}</TableCell>
                 <TableCell>{req.risk_score.toFixed(2)}</TableCell>
                 <TableCell className="text-right">
-                  <Badge variant={req.final_action === 'BLOCK' ? 'destructive' : req.final_action === 'SANITIZE' ? 'default' : req.final_action === 'WARN' ? 'secondary' : 'outline'}>
+                  <Badge variant={req.final_action === 'BLOCK' ? 'destructive' : req.final_action === 'SANITIZE' ? 'default' : req.final_action === 'WARN' ? 'secondary' : 'success'}>
                     {req.final_action}
                   </Badge>
                 </TableCell>
@@ -129,7 +129,7 @@ export function Requests() {
                 </div>
                 <div>
                   <p className="font-semibold text-muted-foreground">Final Action</p>
-                  <Badge variant={selectedRequest.final_action === 'BLOCK' ? 'destructive' : selectedRequest.final_action === 'SANITIZE' ? 'default' : selectedRequest.final_action === 'WARN' ? 'secondary' : 'outline'}>
+                  <Badge variant={selectedRequest.final_action === 'BLOCK' ? 'destructive' : selectedRequest.final_action === 'SANITIZE' ? 'default' : selectedRequest.final_action === 'WARN' ? 'secondary' : 'success'}>
                     {selectedRequest.final_action}
                   </Badge>
                 </div>
