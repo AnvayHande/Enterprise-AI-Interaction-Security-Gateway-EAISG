@@ -202,12 +202,14 @@ window.fetch = async (...args) => {
     url = resource.url;
   }
 
+  const hostname = window.location.hostname || '';
+  
   // Target ChatGPT, Claude, Gemini, Copilot, Perplexity
-  const isChatGPT = url.includes('/conversation') || url.includes('chatgpt.com/backend-api');
-  const isClaude = url.includes('claude.ai/api') || url.includes('/api/append_message') || url.includes('/api/organizations');
-  const isGemini = url.includes('/_/BardChatUi/data/batchexecute') || url.includes('gemini.google.com');
-  const isCopilot = url.includes('sydney.bing.com');
-  const isPerplexity = url.includes('perplexity.ai');
+  const isChatGPT = url.includes('/conversation') || url.includes('chatgpt.com/backend-api') || (hostname.includes('chatgpt.com') && url.includes('/backend-api/'));
+  const isClaude = url.includes('claude.ai/api') || url.includes('/api/append_message') || url.includes('/api/organizations') || (hostname.includes('claude.ai') && url.includes('/api/'));
+  const isGemini = url.includes('/_/BardChatUi/data/batchexecute') || url.includes('gemini.google.com') || (hostname.includes('gemini.google.com') && url.includes('batchexecute'));
+  const isCopilot = url.includes('sydney.bing.com') || hostname.includes('bing.com');
+  const isPerplexity = url.includes('perplexity.ai') || hostname.includes('perplexity.ai');
 
   if ((isChatGPT || isClaude || isGemini || isCopilot || isPerplexity) && config && config.body) {
     try {
@@ -342,6 +344,68 @@ WebSocket.prototype.send = function(data) {
     return; // Async block, returning immediately
   }
   originalWebSocketSend.call(this, data);
+};
+
+// Add XMLHttpRequest Interception for Gemini and others
+const originalXHROpen = XMLHttpRequest.prototype.open;
+const originalXHRSend = XMLHttpRequest.prototype.send;
+
+XMLHttpRequest.prototype.open = function(method, url, async, user, password) {
+  this._url = typeof url === 'string' ? url : (url ? url.toString() : '');
+  return originalXHROpen.apply(this, arguments);
+};
+
+XMLHttpRequest.prototype.send = function(body) {
+  const url = this._url || '';
+  const hostname = window.location.hostname || '';
+  
+  const isGemini = url.includes('/_/BardChatUi/data/batchexecute') || (hostname.includes('gemini.google.com') && url.includes('batchexecute'));
+  const isCopilot = url.includes('sydney.bing.com');
+  const isPerplexity = url.includes('perplexity.ai') || hostname.includes('perplexity.ai');
+  const isClaude = hostname.includes('claude.ai') && url.includes('/api/');
+  const isChatGPT = hostname.includes('chatgpt.com') && url.includes('/backend-api/');
+
+  if ((isGemini || isCopilot || isPerplexity || isClaude || isChatGPT) && body) {
+    let promptText = '';
+    
+    if (typeof body === 'string') {
+      try {
+        promptText = decodeURIComponent(body.replace(/\+/g, '%20'));
+      } catch(e) {
+        promptText = body;
+      }
+    } else if (body instanceof URLSearchParams) {
+      try {
+        promptText = decodeURIComponent(body.toString().replace(/\+/g, '%20'));
+      } catch(e) {
+        promptText = body.toString();
+      }
+    }
+
+    if (promptText && promptText.length > 5 && !promptText.includes('EAISG_CHECK')) {
+      checkPromptWithEAISG(promptText).then(eaisgResult => {
+        if (eaisgResult.success && eaisgResult.data) {
+          const action = eaisgResult.data.final_action || eaisgResult.data.action;
+          if (action === 'BLOCK') {
+            showEaisgAlert('EAISG Security Alert', 'This prompt was blocked due to security policy violations.', eaisgResult.data.findings);
+            // Block XHR by dispatching error and NOT calling originalXHRSend
+            this.dispatchEvent(new Event('error'));
+            return;
+          } else if (action === 'SANITIZE' && eaisgResult.data.sanitized_content) {
+            // Sanitization in URL encoded body is complex, just pass original for now
+            originalXHRSend.call(this, body);
+          } else {
+            originalXHRSend.call(this, body);
+          }
+        } else {
+          originalXHRSend.call(this, body);
+        }
+      });
+      return; // Return immediately to block sync send while we check
+    }
+  }
+  
+  return originalXHRSend.call(this, body);
 };
 
 console.log('[EAISG] Gateway Interceptor injected successfully.');
