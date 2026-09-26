@@ -202,14 +202,14 @@ window.fetch = async (...args) => {
     url = resource.url;
   }
 
-  // Very simplistic check to see if this is an AI chat endpoint
-  // Target ChatGPT and Claude specifically
-  const isChatGPT = url.includes('/conversation');
-  const isClaude = url.includes('/api/append_message');
-  const isGemini = url.includes('/_/BardChatUi/data/batchexecute');
+  // Target ChatGPT, Claude, Gemini, Copilot, Perplexity
+  const isChatGPT = url.includes('/conversation') || url.includes('chatgpt.com/backend-api');
+  const isClaude = url.includes('claude.ai/api') || url.includes('/api/append_message') || url.includes('/api/organizations');
+  const isGemini = url.includes('/_/BardChatUi/data/batchexecute') || url.includes('gemini.google.com');
   const isCopilot = url.includes('sydney.bing.com');
+  const isPerplexity = url.includes('perplexity.ai');
 
-  if ((isChatGPT || isClaude || isGemini || isCopilot) && config && config.body) {
+  if ((isChatGPT || isClaude || isGemini || isCopilot || isPerplexity) && config && config.body) {
     try {
       let bodyObj;
       let promptText = '';
@@ -230,14 +230,29 @@ window.fetch = async (...args) => {
           }
         } else if (isClaude) {
           // Claude payload extraction
-          promptText = bodyObj.text || bodyObj.prompt || '';
+          promptText = bodyObj.prompt || bodyObj.text || JSON.stringify(bodyObj);
+        } else if (isPerplexity) {
+          // Perplexity payload extraction
+          if (bodyObj.messages && Array.isArray(bodyObj.messages)) {
+            const userMessages = bodyObj.messages.filter((m) => m.role === 'user');
+            promptText = userMessages.length > 0 ? userMessages[userMessages.length - 1].content : JSON.stringify(bodyObj);
+          } else {
+            promptText = JSON.stringify(bodyObj);
+          }
+        } else {
+          promptText = JSON.stringify(bodyObj);
         }
       } catch (e) {
         // Not JSON, might be URL encoded (like Gemini)
         if (typeof config.body === 'string') {
-          // Simplistic extraction for non-JSON bodies (just analyze the whole body for now if it's text)
-          if (config.body.length > 10) {
-            promptText = config.body; 
+          try {
+            // Decode URL encoded string to find plaintext secrets
+            promptText = decodeURIComponent(config.body.replace(/\+/g, '%20'));
+          } catch(decErr) {
+            // Fallback to raw body
+            if (config.body.length > 10) {
+              promptText = config.body; 
+            }
           }
         }
       }
@@ -288,6 +303,45 @@ window.fetch = async (...args) => {
   }
 
   return originalFetch(...args);
+};
+
+// Add WebSocket Interception for Perplexity and others
+const originalWebSocketSend = WebSocket.prototype.send;
+WebSocket.prototype.send = function(data) {
+  if (typeof data === 'string' && (window.location.hostname.includes('perplexity.ai') || data.includes('"prompt"') || data.includes('"messages"'))) {
+    // Attempt to parse out user prompt to avoid blocking harmless socket pings
+    let promptText = data;
+    try {
+      // Decode if it's a Socket.IO message e.g., 42["chat", {...}]
+      if (data.startsWith('42')) {
+        const jsonStr = data.substring(2);
+        const parsed = JSON.parse(jsonStr);
+        promptText = JSON.stringify(parsed);
+      }
+    } catch (e) {}
+
+    checkPromptWithEAISG(promptText).then(eaisgResult => {
+      if (eaisgResult.success && eaisgResult.data) {
+        const action = eaisgResult.data.final_action || eaisgResult.data.action;
+        if (action === 'BLOCK') {
+          showEaisgAlert('EAISG Security Alert', 'This prompt was blocked due to security policy violations.', eaisgResult.data.findings);
+          // Block message - do not call originalWebSocketSend
+          return;
+        } else if (action === 'SANITIZE' && eaisgResult.data.sanitized_content) {
+          // For websockets, a simple replace might corrupt JSON. 
+          // Best effort string replace.
+          const sanitizedData = data.replace(promptText, eaisgResult.data.sanitized_content);
+          originalWebSocketSend.call(this, sanitizedData);
+        } else {
+          originalWebSocketSend.call(this, data);
+        }
+      } else {
+        originalWebSocketSend.call(this, data);
+      }
+    });
+    return; // Async block, returning immediately
+  }
+  originalWebSocketSend.call(this, data);
 };
 
 console.log('[EAISG] Gateway Interceptor injected successfully.');
