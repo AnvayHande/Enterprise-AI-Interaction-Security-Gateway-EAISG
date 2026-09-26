@@ -213,6 +213,22 @@ window.fetch = async (...args) => {
 
   if ((isChatGPT || isClaude || isGemini || isCopilot || isPerplexity) && config && config.body) {
     try {
+      // 1. Network-Level File Interception (FormData)
+      if (config.body instanceof FormData) {
+        for (const [key, value] of config.body.entries()) {
+          if (value instanceof File || value instanceof Blob) {
+            const file = value instanceof File ? value : new File([value], 'blob', { type: value.type });
+            console.log('[EAISG] Intercepted file upload via fetch:', file.name);
+            const fileResult = await checkFileWithEAISG(file);
+            if (fileResult.success && fileResult.data && (fileResult.data.final_action || fileResult.data.action) === 'BLOCK') {
+              showEaisgAlert('EAISG Security Alert', 'This file upload was blocked due to security policy violations.', fileResult.data.findings);
+              return Promise.reject(new Error('EAISG Blocked File Upload'));
+            }
+          }
+        }
+      }
+
+      // 2. Prompt Interception
       let bodyObj;
       let promptText = '';
       
@@ -310,7 +326,8 @@ window.fetch = async (...args) => {
 // Add WebSocket Interception for Perplexity and others
 const originalWebSocketSend = WebSocket.prototype.send;
 WebSocket.prototype.send = function(data) {
-  if (typeof data === 'string' && (window.location.hostname.includes('perplexity.ai') || data.includes('"prompt"') || data.includes('"messages"'))) {
+  const hostname = window.location.hostname || '';
+  if (typeof data === 'string' && (hostname.includes('perplexity.ai') || hostname.includes('bing.com') || data.includes('"prompt"') || data.includes('"messages"') || data.includes('"message"'))) {
     // Attempt to parse out user prompt to avoid blocking harmless socket pings
     let promptText = data;
     try {
@@ -360,30 +377,48 @@ XMLHttpRequest.prototype.send = function(body) {
   const hostname = window.location.hostname || '';
   
   const isGemini = url.includes('/_/BardChatUi/data/batchexecute') || (hostname.includes('gemini.google.com') && url.includes('batchexecute'));
-  const isCopilot = url.includes('sydney.bing.com');
+  const isCopilot = url.includes('sydney.bing.com') || hostname.includes('bing.com');
   const isPerplexity = url.includes('perplexity.ai') || hostname.includes('perplexity.ai');
   const isClaude = hostname.includes('claude.ai') && url.includes('/api/');
   const isChatGPT = hostname.includes('chatgpt.com') && url.includes('/backend-api/');
 
   if ((isGemini || isCopilot || isPerplexity || isClaude || isChatGPT) && body) {
-    let promptText = '';
-    
-    if (typeof body === 'string') {
-      try {
-        promptText = decodeURIComponent(body.replace(/\+/g, '%20'));
-      } catch(e) {
-        promptText = body;
+    const processXHR = async () => {
+      // 1. Network-Level File Interception (FormData)
+      if (body instanceof FormData) {
+        for (const [key, value] of body.entries()) {
+          if (value instanceof File || value instanceof Blob) {
+            const file = value instanceof File ? value : new File([value], 'blob', { type: value.type });
+            console.log('[EAISG] Intercepted file upload via XHR:', file.name);
+            const fileResult = await checkFileWithEAISG(file);
+            if (fileResult.success && fileResult.data && (fileResult.data.final_action || fileResult.data.action) === 'BLOCK') {
+              showEaisgAlert('EAISG Security Alert', 'This file upload was blocked due to security policy violations.', fileResult.data.findings);
+              this.dispatchEvent(new Event('error'));
+              return; // Block XHR
+            }
+          }
+        }
       }
-    } else if (body instanceof URLSearchParams) {
-      try {
-        promptText = decodeURIComponent(body.toString().replace(/\+/g, '%20'));
-      } catch(e) {
-        promptText = body.toString();
-      }
-    }
 
-    if (promptText && promptText.length > 5 && !promptText.includes('EAISG_CHECK')) {
-      checkPromptWithEAISG(promptText).then(eaisgResult => {
+      // 2. Prompt Interception
+      let promptText = '';
+      
+      if (typeof body === 'string') {
+        try {
+          promptText = decodeURIComponent(body.replace(/\+/g, '%20'));
+        } catch(e) {
+          promptText = body;
+        }
+      } else if (body instanceof URLSearchParams) {
+        try {
+          promptText = decodeURIComponent(body.toString().replace(/\+/g, '%20'));
+        } catch(e) {
+          promptText = body.toString();
+        }
+      }
+
+      if (promptText && promptText.length > 5 && !promptText.includes('EAISG_CHECK')) {
+        const eaisgResult = await checkPromptWithEAISG(promptText);
         if (eaisgResult.success && eaisgResult.data) {
           const action = eaisgResult.data.final_action || eaisgResult.data.action;
           if (action === 'BLOCK') {
@@ -394,15 +429,15 @@ XMLHttpRequest.prototype.send = function(body) {
           } else if (action === 'SANITIZE' && eaisgResult.data.sanitized_content) {
             // Sanitization in URL encoded body is complex, just pass original for now
             originalXHRSend.call(this, body);
-          } else {
-            originalXHRSend.call(this, body);
+            return;
           }
-        } else {
-          originalXHRSend.call(this, body);
         }
-      });
-      return; // Return immediately to block sync send while we check
-    }
+      }
+      originalXHRSend.call(this, body);
+    };
+
+    processXHR();
+    return; // Return immediately to block sync send while we async check
   }
   
   return originalXHRSend.call(this, body);
