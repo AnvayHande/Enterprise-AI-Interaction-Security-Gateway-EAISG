@@ -31,19 +31,28 @@ export function Requests() {
   const [selectedRequest, setSelectedRequest] = useState<RequestLog | null>(null);
   const [findings, setFindings] = useState<Finding[]>([]);
   const [loadingFindings, setLoadingFindings] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const fetchRequests = async (showLoading = false) => {
+    if (showLoading) setLoading(true);
+    setIsRefreshing(true);
+    try {
+      const data = await api.getRequests();
+      setRequests(data);
+    } catch (err) {
+      console.error('Failed to load requests', err);
+    } finally {
+      if (showLoading) setLoading(false);
+      setIsRefreshing(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchRequests = async () => {
-      try {
-        const data = await api.getRequests();
-        setRequests(data);
-      } catch (err) {
-        console.error('Failed to load requests', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchRequests();
+    fetchRequests(true);
+    const interval = setInterval(() => {
+      fetchRequests(false);
+    }, 4000);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -58,14 +67,27 @@ export function Requests() {
     }
   }, [selectedRequest]);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div className="p-12 text-center text-muted-foreground">Loading requests...</div>;
 
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold tracking-tight">Requests Log</h2>
-        <div className="flex w-full max-w-sm items-center space-x-2">
-          <Input type="text" placeholder="Filter requests..." />
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Requests Log</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">Live monitoring • Updates automatically</p>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => fetchRequests(false)} 
+            disabled={isRefreshing}
+          >
+            {isRefreshing ? 'Refreshing...' : 'Refresh'}
+          </Button>
+          <div className="flex w-full max-w-sm items-center space-x-2">
+            <Input type="text" placeholder="Filter requests..." />
+          </div>
         </div>
       </div>
       <div className="rounded-md border bg-card">

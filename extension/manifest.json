@@ -14,10 +14,18 @@
     {
       "matches": [
         "*://*.chatgpt.com/*",
+        "*://chatgpt.com/*",
+        "*://*.openai.com/*",
+        "*://chat.openai.com/*",
         "*://*.claude.ai/*",
+        "*://claude.ai/*",
         "*://gemini.google.com/*",
+        "*://*.gemini.google.com/*",
         "*://copilot.microsoft.com/*",
-        "*://*.perplexity.ai/*"
+        "*://*.copilot.microsoft.com/*",
+        "*://*.bing.com/*",
+        "*://*.perplexity.ai/*",
+        "*://perplexity.ai/*"
       ],
       "js": ["src/content.ts"],
       "run_at": "document_start"
@@ -31,10 +39,19 @@
   ],
   "host_permissions": [
     "*://*.chatgpt.com/*",
+    "*://chatgpt.com/*",
+    "*://*.openai.com/*",
+    "*://chat.openai.com/*",
     "*://*.claude.ai/*",
+    "*://claude.ai/*",
     "*://gemini.google.com/*",
+    "*://*.gemini.google.com/*",
     "*://copilot.microsoft.com/*",
+    "*://*.copilot.microsoft.com/*",
+    "*://*.bing.com/*",
     "*://*.perplexity.ai/*",
+    "*://perplexity.ai/*",
     "http://127.0.0.1:8000/*"
   ]
 }
+

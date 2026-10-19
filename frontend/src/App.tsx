@@ -19,8 +19,15 @@ function App() {
     const handleStorageChange = () => {
       setIsAuthenticated(!!localStorage.getItem('access_token'));
     };
+    const handleAuthExpired = () => {
+      setIsAuthenticated(false);
+    };
     window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    window.addEventListener('auth_expired', handleAuthExpired);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('auth_expired', handleAuthExpired);
+    };
   }, []);
 
   const handleLoginSuccess = () => {

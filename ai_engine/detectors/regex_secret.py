@@ -6,8 +6,14 @@ class RegexSecretDetector:
     def __init__(self):
         # Expanded set of patterns based on detect-secrets/gitleaks
         self.patterns = {
+            "OPENAI_API_KEY": r"\bsk-(?:proj-)?[a-zA-Z0-9_\-]{20,}\b",
+            "ANTHROPIC_API_KEY": r"\bsk-ant-[a-zA-Z0-9_\-]{20,}\b",
+            "GOOGLE_API_KEY": r"\bAIza[0-9A-Za-z_\-]{35}\b",
             "AWS_ACCESS_KEY": r"(?i)(?:A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}",
-            "AWS_SECRET_KEY": r"(?i)(?:aws_secret|aws_secret_access_key|secret_key).{0,20}['\"][0-9a-zA-Z\/+]{40}['\"]",
+            "AWS_SECRET_KEY": r"(?i)(?:aws_secret|aws_secret_access_key|secret_key)[\s:=]+['\"]?([0-9a-zA-Z\/+]{40})['\"]?",
+            "GENERIC_PASSWORD": r"(?i)(?:password|passwd|db_password)\s*[:=]\s*['\"]?([^\s'\"]{6,})['\"]?",
+            "STRIPE_API_KEY": r"\b(?:sk|pk)_(?:live|test)_[0-9a-zA-Z]{24,}\b",
+            "JWT_TOKEN": r"\beyJ[a-zA-Z0-9_-]{10,}\.eyJ[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}\b",
             "GENERIC_BEARER_TOKEN": r"(?i)bearer\s+[a-zA-Z0-9_\-\.]{20,}",
             "PRIVATE_KEY_HEADER": r"-----BEGIN (RSA|OPENSSH|DSA|EC|PGP) PRIVATE KEY-----",
             "GITHUB_TOKEN": r"(?i)gh[p|u|s|r]_[A-Za-z0-9_]{36}",
@@ -15,12 +21,11 @@ class RegexSecretDetector:
             "GENERIC_API_KEY_CONTEXT": r"(?i)(api[_\s-]?key).{0,30}[a-zA-Z0-9]{8,}"
         }
         
-        # Explicit allowlist for known-safe placeholders
+        # Explicit allowlist for known-safe dummy placeholders only
         self.allowlist = [
             "your_api_key_here",
             "example_token",
-            "AKIAIOSFODNN7EXAMPLE", # AWS documented example key
-            "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+            "insert_key_here"
         ]
         
     def _shannon_entropy(self, data: str) -> float:

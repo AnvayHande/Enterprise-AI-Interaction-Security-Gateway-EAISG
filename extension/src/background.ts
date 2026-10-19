@@ -155,20 +155,42 @@ function b64toBlob(b64Data: string, contentType: string = '', sliceSize: number 
 
 async function analyzeFile(payload: { fileName: string; fileType: string; fileData: string; aiModel?: string }, sendResponse: (response: any) => void) {
   try {
+    if (!authToken) {
+      await loginToBackend();
+    }
     const blob = b64toBlob(payload.fileData, payload.fileType);
-    const formData = new FormData();
-    formData.append('destination_id', '1');
-    if (payload.aiModel) formData.append('ai_model', payload.aiModel);
-    formData.append('file', blob, payload.fileName);
+    const createFormData = () => {
+      const fd = new FormData();
+      fd.append('destination_id', '1');
+      if (payload.aiModel) fd.append('ai_model', payload.aiModel);
+      fd.append('file', blob, payload.fileName);
+      return fd;
+    };
 
-    const response = await fetch('http://127.0.0.1:8000/api/v1/analyze/file', {
+    let response = await fetch('http://127.0.0.1:8000/api/v1/analyze/file', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${authToken}`,
       },
-      body: formData,
+      body: createFormData(),
     });
+
+    if (response.status === 401) {
+      await loginToBackend();
+      response = await fetch('http://127.0.0.1:8000/api/v1/analyze/file', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+        },
+        body: createFormData(),
+      });
+    }
     
+    if (!response.ok) {
+      sendResponse({ success: false, error: `HTTP ${response.status}` });
+      return;
+    }
+
     const data = await response.json();
     sendResponse({ success: true, data });
   } catch (error) {
@@ -179,7 +201,10 @@ async function analyzeFile(payload: { fileName: string; fileType: string; fileDa
 
 async function analyzePrompt(payload: { prompt: string; aiModel?: string }, sendResponse: (response: any) => void) {
   try {
-    const response = await fetch('http://127.0.0.1:8000/api/v1/analyze/prompt', {
+    if (!authToken) {
+      await loginToBackend();
+    }
+    let response = await fetch('http://127.0.0.1:8000/api/v1/analyze/prompt', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -191,6 +216,30 @@ async function analyzePrompt(payload: { prompt: string; aiModel?: string }, send
         destination_id: 1,
       }),
     });
+
+    if (response.status === 401) {
+      console.warn('[EAISG Extension] Token expired, re-authenticating...');
+      await loginToBackend();
+      response = await fetch('http://127.0.0.1:8000/api/v1/analyze/prompt', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`,
+        },
+        body: JSON.stringify({
+          prompt: payload.prompt,
+          ai_model: payload.aiModel,
+          destination_id: 1,
+        }),
+      });
+    }
+
+    if (!response.ok) {
+      console.error('[EAISG Extension] Gateway response not ok:', response.status);
+      sendResponse({ success: false, error: `HTTP ${response.status}` });
+      return;
+    }
+
     const data = await response.json();
     sendResponse({ success: true, data });
   } catch (error) {
@@ -201,20 +250,30 @@ async function analyzePrompt(payload: { prompt: string; aiModel?: string }, send
 
 async function getRecentActivity(sendResponse: (response: any) => void) {
   try {
-    const response = await fetch("http://127.0.0.1:8000/api/v1/dashboard/requests?limit=5", {
+    if (!authToken) {
+      await loginToBackend();
+    }
+    let response = await fetch("http://127.0.0.1:8000/api/v1/dashboard/requests?limit=5", {
       headers: { "Authorization": `Bearer ${authToken}` },
     });
     
+    if (response.status === 401) {
+      await loginToBackend();
+      response = await fetch("http://127.0.0.1:8000/api/v1/dashboard/requests?limit=5", {
+        headers: { "Authorization": `Bearer ${authToken}` },
+      });
+    }
+
     const destResponse = await fetch("http://127.0.0.1:8000/api/v1/settings/destinations", {
       headers: { "Authorization": `Bearer ${authToken}` },
     });
     
-    if (!response.ok || !destResponse.ok) {
-      throw new Error("Failed to fetch data");
+    if (!response.ok) {
+      throw new Error(`Failed to fetch activity: HTTP ${response.status}`);
     }
     
     const requests = await response.json();
-    const destinations = await destResponse.json();
+    const destinations = destResponse.ok ? await destResponse.json() : [];
     
     const destMap: Record<number, any> = {};
     for (const d of destinations) {
@@ -223,7 +282,7 @@ async function getRecentActivity(sendResponse: (response: any) => void) {
     
     const merged = requests.map((r: any) => ({
       ...r,
-      destination: destMap[r.destination_id] || { name: r.ai_model || "Unknown", provider: r.ai_model || "Unknown" },
+      destination: destMap[r.destination_id] || { name: r.ai_model || "AI Model", provider: r.ai_model || "AI Model" },
     }));
     
     sendResponse({ success: true, data: merged });

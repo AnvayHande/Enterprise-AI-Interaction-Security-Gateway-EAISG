@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { api } from '../lib/api';
 
@@ -10,23 +11,49 @@ export function Overview() {
     average_risk: number;
   } | null>(null);
   const [criticalEvents, setCriticalEvents] = useState<any[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  const init = async (showError = true) => {
+    try {
+      if (showError) setError(null);
+      const stats = await api.getOverviewStats(7);
+      setData(stats);
+      const events = await api.getCriticalEvents(5);
+      setCriticalEvents(events);
+    } catch (err: any) {
+      console.error('Failed to load overview stats', err);
+      if (showError) {
+        setError(err?.message || 'Failed to load statistics. Please verify backend is running.');
+      }
+    }
+  };
 
   useEffect(() => {
-    const init = async () => {
-      try {
-        const stats = await api.getOverviewStats(7);
-        setData(stats);
-        const events = await api.getCriticalEvents(5);
-        setCriticalEvents(events);
-      } catch (err) {
-        console.error('Failed to load overview stats', err);
-      }
-    };
-    init();
+    init(true);
+    const interval = setInterval(() => {
+      init(false);
+    }, 5000);
+    return () => clearInterval(interval);
   }, []);
 
+  if (error) {
+    return (
+      <div className="p-8 text-center space-y-4 bg-card rounded-lg border max-w-md mx-auto mt-12">
+        <p className="text-destructive font-medium text-sm">{error}</p>
+        <div className="flex justify-center space-x-3">
+          <Button onClick={() => init()} variant="outline" size="sm">Retry</Button>
+          <Button onClick={() => { localStorage.removeItem('access_token'); window.location.reload(); }} size="sm">Login Again</Button>
+        </div>
+      </div>
+    );
+  }
+
   if (!data) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center p-12 text-sm text-muted-foreground">
+        Loading gateway overview metrics...
+      </div>
+    );
   }
 
   // Convert decisions into chart data

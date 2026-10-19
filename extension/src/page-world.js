@@ -136,10 +136,10 @@ function showEaisgAlert(title, message, findings) {
 
 function detectAIModel(url = '') {
   const hostname = window.location.hostname || '';
-  if (url.includes('chatgpt.com/backend-api') || hostname.includes('chatgpt.com')) return 'ChatGPT';
-  if (url.includes('claude.ai/api') || hostname.includes('claude.ai')) return 'Claude';
+  if (url.includes('chatgpt.com') || url.includes('openai.com') || hostname.includes('chatgpt.com') || hostname.includes('openai.com')) return 'ChatGPT';
+  if (url.includes('claude.ai') || hostname.includes('claude.ai')) return 'Claude';
   if (url.includes('gemini.google.com') || url.includes('/_/BardChatUi') || hostname.includes('gemini.google.com')) return 'Gemini';
-  if (url.includes('sydney.bing.com') || hostname.includes('bing.com')) return 'Copilot';
+  if (url.includes('sydney.bing.com') || url.includes('copilot.microsoft.com') || hostname.includes('bing.com') || hostname.includes('copilot.microsoft.com')) return 'Copilot';
   if (url.includes('perplexity.ai') || hostname.includes('perplexity.ai')) return 'Perplexity';
   return 'Unknown AI';
 }
@@ -214,12 +214,16 @@ window.fetch = async (...args) => {
 
   const hostname = window.location.hostname || '';
   
-  // Target ONLY message-sending endpoints, not settings/analytics/conversation-list calls
-  const isChatGPT = (hostname.includes('chatgpt.com') && url.includes('/backend-api/conversation'));
-  const isClaude = (hostname.includes('claude.ai') && (url.includes('/completion') || url.includes('/append_message') || url.includes('/chat_message')));
-  const isGemini = url.includes('/_/BardChatUi/data/batchexecute') || (hostname.includes('gemini.google.com') && url.includes('batchexecute'));
-  const isCopilot = url.includes('sydney.bing.com/sydney/') && config && config.method && config.method.toUpperCase() === 'POST';
-  const isPerplexity = hostname.includes('perplexity.ai') && url.includes('/api/') && config && config.method && config.method.toUpperCase() === 'POST';
+  // Target AI provider messaging endpoints
+  const isChatGPT = (hostname.includes('chatgpt.com') || hostname.includes('openai.com')) &&
+    (url.includes('/conversation') || url.includes('/chat') || url.includes('/backend-api') || url.includes('/backend-anon'));
+  const isClaude = hostname.includes('claude.ai') &&
+    (url.includes('/completion') || url.includes('/append_message') || url.includes('/chat_message') || url.includes('/conversations'));
+  const isGemini = url.includes('batchexecute') || (hostname.includes('gemini.google.com') && (url.includes('/_/BardChatUi') || url.includes('batchexecute') || url.includes('/assistant')));
+  const isCopilot = (hostname.includes('copilot.microsoft.com') || hostname.includes('bing.com')) &&
+    (url.includes('sydney') || url.includes('/chat') || url.includes('/api/'));
+  const isPerplexity = hostname.includes('perplexity.ai') &&
+    (url.includes('/api/') || url.includes('/socket.io'));
 
   if ((isChatGPT || isClaude || isGemini || isCopilot || isPerplexity) && config && config.body) {
     try {
@@ -243,27 +247,66 @@ window.fetch = async (...args) => {
       let promptText = '';
       
       try {
-        bodyObj = JSON.parse(config.body);
-        if (isChatGPT) {
-          // ChatGPT payload extraction — only extract the actual user-typed message
-          if (bodyObj.messages && Array.isArray(bodyObj.messages)) {
-            const userMessages = bodyObj.messages.filter((m) => m?.author?.role === 'user' || !m.author);
-            const lastMessage = userMessages[userMessages.length - 1] || bodyObj.messages[0];
-            promptText = lastMessage?.content?.parts?.filter(p => typeof p === 'string')?.join('\n') || '';
+        if (typeof config.body === 'string') {
+          bodyObj = JSON.parse(config.body);
+        } else if (config.body && typeof config.body === 'object' && !(config.body instanceof FormData) && !(config.body instanceof URLSearchParams)) {
+          bodyObj = config.body;
+        }
+
+        if (bodyObj) {
+          if (isChatGPT) {
+            // ChatGPT payload extraction — only extract the actual user-typed message
+            if (bodyObj.messages && Array.isArray(bodyObj.messages)) {
+              const userMessages = bodyObj.messages.filter((m) => m?.author?.role === 'user' || !m.author);
+              const lastMessage = userMessages[userMessages.length - 1] || bodyObj.messages[bodyObj.messages.length - 1];
+              if (lastMessage?.content?.parts && Array.isArray(lastMessage.content.parts)) {
+                promptText = lastMessage.content.parts.filter(p => typeof p === 'string').join('\n');
+              } else if (typeof lastMessage?.content?.text === 'string') {
+                promptText = lastMessage.content.text;
+              } else if (typeof lastMessage?.text === 'string') {
+                promptText = lastMessage.text;
+              }
+            } else if (typeof bodyObj.prompt === 'string') {
+              promptText = bodyObj.prompt;
+            } else if (typeof bodyObj.input === 'string') {
+              promptText = bodyObj.input;
+            }
+          } else if (isClaude) {
+            // Claude payload extraction
+            if (typeof bodyObj.prompt === 'string') {
+              promptText = bodyObj.prompt;
+            } else if (typeof bodyObj.text === 'string') {
+              promptText = bodyObj.text;
+            } else if (bodyObj.messages && Array.isArray(bodyObj.messages)) {
+              const userMsgs = bodyObj.messages.filter(m => m.role === 'user');
+              const last = userMsgs[userMsgs.length - 1] || bodyObj.messages[bodyObj.messages.length - 1];
+              if (typeof last?.content === 'string') {
+                promptText = last.content;
+              } else if (Array.isArray(last?.content)) {
+                promptText = last.content.map(c => typeof c === 'string' ? c : (c?.text || '')).filter(Boolean).join('\n');
+              }
+            }
+          } else if (isPerplexity) {
+            // Perplexity payload extraction
+            if (bodyObj.messages && Array.isArray(bodyObj.messages)) {
+              const userMessages = bodyObj.messages.filter((m) => m.role === 'user');
+              promptText = userMessages.length > 0 ? (userMessages[userMessages.length - 1].content || '') : '';
+            } else if (typeof bodyObj.query === 'string') {
+              promptText = bodyObj.query;
+            } else if (typeof bodyObj.text === 'string') {
+              promptText = bodyObj.text;
+            }
           }
-          // Do NOT fall back to JSON.stringify — that would scan internal metadata
-          // (conversation_id, gizmo_id, timezone, etc.) and cause false positives
-        } else if (isClaude) {
-          // Claude payload extraction
-          promptText = bodyObj.prompt || bodyObj.text || '';
-        } else if (isPerplexity) {
-          // Perplexity payload extraction
-          if (bodyObj.messages && Array.isArray(bodyObj.messages)) {
-            const userMessages = bodyObj.messages.filter((m) => m.role === 'user');
-            promptText = userMessages.length > 0 ? userMessages[userMessages.length - 1].content : '';
+
+          // Fallback safe extraction if provider specific extraction didn't populate promptText
+          if (!promptText) {
+            if (typeof bodyObj.prompt === 'string' && bodyObj.prompt.trim()) promptText = bodyObj.prompt;
+            else if (typeof bodyObj.query === 'string' && bodyObj.query.trim()) promptText = bodyObj.query;
+            else if (typeof bodyObj.text === 'string' && bodyObj.text.trim()) promptText = bodyObj.text;
+            else if (typeof bodyObj.input === 'string' && bodyObj.input.trim()) promptText = bodyObj.input;
+            else if (typeof bodyObj.message === 'string' && bodyObj.message.trim()) promptText = bodyObj.message;
           }
         }
-        // For unknown providers, skip rather than scanning raw JSON metadata
       } catch (e) {
         // Not JSON, might be URL encoded (like Gemini)
         if (typeof config.body === 'string') {
@@ -271,10 +314,15 @@ window.fetch = async (...args) => {
             // Decode URL encoded string to find plaintext secrets
             promptText = decodeURIComponent(config.body.replace(/\+/g, '%20'));
           } catch(decErr) {
-            // Fallback to raw body
             if (config.body.length > 10) {
               promptText = config.body; 
             }
+          }
+        } else if (config.body instanceof URLSearchParams) {
+          try {
+            promptText = decodeURIComponent(config.body.toString().replace(/\+/g, '%20'));
+          } catch(decErr) {
+            promptText = config.body.toString();
           }
         }
       }
@@ -298,7 +346,6 @@ window.fetch = async (...args) => {
                 const userMessages = bodyObj.messages.filter((m) => m?.author?.role === 'user' || !m.author);
                 const lastMessage = userMessages[userMessages.length - 1] || bodyObj.messages[0];
                 if (lastMessage && lastMessage.content && lastMessage.content.parts) {
-                  // Replace the original text with sanitized text
                   lastMessage.content.parts = lastMessage.content.parts.map((part) => {
                     if (typeof part === 'string' && part.includes(promptText)) {
                       return part.replace(promptText, eaisgResult.data.sanitized_content);
@@ -313,7 +360,6 @@ window.fetch = async (...args) => {
               if (bodyObj.prompt) bodyObj.prompt = eaisgResult.data.sanitized_content;
               config.body = JSON.stringify(bodyObj);
             } else if (typeof config.body === 'string') {
-              // Best effort replace for others
               config.body = config.body.replace(promptText, eaisgResult.data.sanitized_content);
             }
           }
@@ -327,47 +373,49 @@ window.fetch = async (...args) => {
   return originalFetch(...args);
 };
 
-// Add WebSocket Interception for Perplexity and others
+// Add WebSocket Interception for Perplexity, Copilot and others
 const originalWebSocketSend = WebSocket.prototype.send;
 WebSocket.prototype.send = function(data) {
   const hostname = window.location.hostname || '';
-  if (typeof data === 'string' && (hostname.includes('perplexity.ai') || hostname.includes('bing.com'))) {
-    // Only intercept WebSocket messages that are likely to contain user prompts
+  if (typeof data === 'string' && (hostname.includes('perplexity.ai') || hostname.includes('bing.com') || hostname.includes('copilot.microsoft.com'))) {
     let promptText = '';
     try {
-      // Decode if it's a Socket.IO message e.g., 42["chat", {...}]
       if (data.startsWith('42')) {
-        const jsonStr = data.substring(2);
-        const parsed = JSON.parse(jsonStr);
-        // Extract actual user text from the structured message
-        if (Array.isArray(parsed) && parsed.length >= 2 && typeof parsed[1] === 'object') {
-          promptText = parsed[1].query || parsed[1].text || parsed[1].prompt || '';
+        const bracketIdx = data.indexOf('[');
+        if (bracketIdx !== -1) {
+          const jsonStr = data.substring(bracketIdx);
+          const parsed = JSON.parse(jsonStr);
+          if (Array.isArray(parsed) && parsed.length >= 2) {
+            const payload = parsed[1];
+            if (typeof payload === 'string') {
+              promptText = payload;
+            } else if (payload && typeof payload === 'object') {
+              promptText = payload.query || payload.text || payload.prompt || payload.query_str || payload.content || '';
+            }
+          }
         }
       } else {
-        // Try parsing as plain JSON and extracting user prompt fields
         const parsed = JSON.parse(data);
-        promptText = parsed.query || parsed.text || parsed.prompt || '';
+        if (parsed && typeof parsed === 'object') {
+          promptText = parsed.query || parsed.text || parsed.prompt || parsed.query_str || parsed.content || '';
+        }
       }
     } catch (e) {
-      // Not parseable, skip — don't scan raw wire data
+      // Not parseable JSON wire data, pass through
     }
 
     if (!promptText) {
-      // No user prompt found in the message, pass through without scanning
       originalWebSocketSend.call(this, data);
       return;
     }
 
     checkPromptWithEAISG(promptText, detectAIModel()).then(eaisgResult => {
-      if (eaisgResult.success && eaisgResult.data) {
+      if (eaisgResult && eaisgResult.success && eaisgResult.data) {
         const action = eaisgResult.data.final_action || eaisgResult.data.action;
         if (action === 'BLOCK') {
           showEaisgAlert('EAISG Security Alert', 'This prompt was blocked due to security policy violations.', eaisgResult.data.findings);
-          // Block message - do not call originalWebSocketSend
           return;
         } else if (action === 'SANITIZE' && eaisgResult.data.sanitized_content) {
-          // For websockets, a simple replace might corrupt JSON. 
-          // Best effort string replace.
           const sanitizedData = data.replace(promptText, eaisgResult.data.sanitized_content);
           originalWebSocketSend.call(this, sanitizedData);
         } else {
@@ -376,8 +424,10 @@ WebSocket.prototype.send = function(data) {
       } else {
         originalWebSocketSend.call(this, data);
       }
+    }).catch(() => {
+      originalWebSocketSend.call(this, data);
     });
-    return; // Async block, returning immediately
+    return;
   }
   originalWebSocketSend.call(this, data);
 };

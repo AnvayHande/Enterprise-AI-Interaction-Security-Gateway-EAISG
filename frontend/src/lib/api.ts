@@ -27,7 +27,7 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   if (!response.ok) {
     if (response.status === 401) {
       localStorage.removeItem('access_token');
-      // Do not reload to prevent infinite loops, just let the app handle the failure
+      window.dispatchEvent(new Event('auth_expired'));
     }
     
     let message = 'An error occurred';
