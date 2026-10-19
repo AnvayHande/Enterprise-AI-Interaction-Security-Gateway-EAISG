@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from database.session import get_db
 from database.models import User, Session as DBSession
 from security.auth import verify_password, create_access_token, create_refresh_token
+from security.dependencies import get_current_user
 from backend.schemas.auth import Token, UserResponse, UserCreate
 
 router = APIRouter()
