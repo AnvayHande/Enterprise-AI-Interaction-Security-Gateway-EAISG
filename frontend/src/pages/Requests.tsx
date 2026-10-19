@@ -9,6 +9,7 @@ import { api } from '../lib/api';
 interface RequestLog {
   id: string | number;
   user_id: number;
+  username?: string;
   destination_id: number;
   ai_model?: string;
   status: string;
@@ -64,7 +65,7 @@ export function Requests() {
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold tracking-tight">Requests Log</h2>
         <div className="flex w-full max-w-sm items-center space-x-2">
-          <Input type="text" placeholder="Filter by user ID..." />
+          <Input type="text" placeholder="Filter requests..." />
         </div>
       </div>
       <div className="rounded-md border bg-card">
@@ -72,7 +73,7 @@ export function Requests() {
           <TableHeader>
             <TableRow>
               <TableHead className="w-[100px]">Request ID</TableHead>
-              <TableHead>User ID</TableHead>
+              <TableHead>User</TableHead>
               <TableHead>AI Model</TableHead>
               <TableHead>Date</TableHead>
               <TableHead>Risk Score</TableHead>
@@ -84,7 +85,11 @@ export function Requests() {
             {requests.map((req) => (
               <TableRow key={req.id}>
                 <TableCell className="font-medium" title={String(req.id)}>{String(req.id).substring(0, 8)}{String(req.id).length > 8 ? '...' : ''}</TableCell>
-                <TableCell>{req.user_id}</TableCell>
+                <TableCell>
+                  <span className="font-semibold text-slate-800 dark:text-slate-100">
+                    {req.username || `User #${req.user_id}`}
+                  </span>
+                </TableCell>
                 <TableCell>{req.ai_model || req.destination_id}</TableCell>
                 <TableCell>{new Date(req.created_at).toLocaleString()}</TableCell>
                 <TableCell>{req.risk_score.toFixed(2)}</TableCell>
@@ -115,8 +120,8 @@ export function Requests() {
                   <p>{String(selectedRequest.id)}</p>
                 </div>
                 <div>
-                  <p className="font-semibold text-muted-foreground">User ID</p>
-                  <p>{selectedRequest.user_id}</p>
+                  <p className="font-semibold text-muted-foreground">User</p>
+                  <p className="font-semibold text-slate-800 dark:text-slate-100">{selectedRequest.username || `User ID ${selectedRequest.user_id}`}</p>
                 </div>
                 <div>
                   <p className="font-semibold text-muted-foreground">AI Model</p>

@@ -37,3 +37,16 @@ def logout(refresh_token: str, db: Session = Depends(get_db)):
         db.delete(db_session)
         db.commit()
     return {"message": "Logged out successfully"}
+
+@router.get("/me")
+def get_me(current_user: User = Depends(get_current_user)):
+    return {
+        "id": current_user.id,
+        "username": current_user.username,
+        "email": current_user.email,
+        "role": current_user.role,
+        "department_id": current_user.department_id,
+        "department_name": current_user.department.name if current_user.department else "General",
+        "is_active": current_user.is_active
+    }
+

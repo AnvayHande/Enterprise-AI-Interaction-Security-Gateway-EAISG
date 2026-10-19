@@ -42,20 +42,23 @@ def get_requests(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    requests = db.query(Request, AIDestination.name).join(
+    requests = db.query(Request, AIDestination.name, User.username).outerjoin(
         AIDestination, Request.destination_id == AIDestination.id
+    ).outerjoin(
+        User, Request.user_id == User.id
     ).order_by(desc(Request.created_at)).offset(skip).limit(limit).all()
     return [
         {
             "id": r.id,
             "user_id": r.user_id,
+            "username": username or f"User {r.user_id}",
             "destination_id": r.destination_id,
-            "ai_model": ai_name,
+            "ai_model": ai_name or "Unknown AI",
             "status": r.status,
             "final_action": r.final_action,
             "risk_score": r.risk_score,
             "created_at": r.created_at.replace(tzinfo=timezone.utc) if r.created_at else None
-        } for r, ai_name in requests
+        } for r, ai_name, username in requests
     ]
 
 @router.get("/findings")
@@ -82,17 +85,23 @@ def get_users_risk(
     cutoff = datetime.now(timezone.utc) - timedelta(days=days)
     user_risks = db.query(
         User.username,
+        Department.name,
         func.count(Request.id).label("total_requests"),
         func.avg(Request.risk_score).label("avg_risk")
-    ).join(Request).filter(
+    ).outerjoin(
+        Department, User.department_id == Department.id
+    ).join(
+        Request, User.id == Request.user_id
+    ).filter(
         Request.created_at >= cutoff
-    ).group_by(User.username).all()
+    ).group_by(User.username, Department.name).all()
     
     return [
         {
             "username": u[0],
-            "total_requests": u[1],
-            "avg_risk": round(u[2] or 0.0, 2)
+            "department": u[1] or "General",
+            "total_requests": u[2],
+            "avg_risk": round(u[3] or 0.0, 2)
         } for u in user_risks
     ]
 
@@ -119,8 +128,10 @@ def get_critical_requests(
     current_user: User = Depends(get_current_user)
 ):
     from database.models import AIDestination
-    requests = db.query(Request, AIDestination.name).join(
+    requests = db.query(Request, AIDestination.name, User.username).outerjoin(
         AIDestination, Request.destination_id == AIDestination.id
+    ).outerjoin(
+        User, Request.user_id == User.id
     ).filter(
         Request.final_action == "BLOCK"
     ).order_by(desc(Request.created_at)).limit(limit).all()
@@ -129,11 +140,12 @@ def get_critical_requests(
         {
             "id": r.id,
             "user_id": r.user_id,
+            "username": username or f"User {r.user_id}",
             "destination_id": r.destination_id,
-            "ai_model": ai_name,
+            "ai_model": ai_name or "Unknown AI",
             "status": r.status,
             "final_action": r.final_action,
             "risk_score": r.risk_score,
             "created_at": r.created_at.replace(tzinfo=timezone.utc) if r.created_at else None
-        } for r, ai_name in requests
+        } for r, ai_name, username in requests
     ]

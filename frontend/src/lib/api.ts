@@ -133,4 +133,48 @@ export const api = {
       method: 'PUT',
       body: JSON.stringify(dest),
     }),
+
+  // Settings / User Management
+  getSettingsUsers: () =>
+    request<any[]>('/settings/users'),
+
+  createSettingsUser: (user: any) =>
+    request<any>('/settings/users', {
+      method: 'POST',
+      body: JSON.stringify(user),
+    }),
+
+  updateSettingsUser: (id: number, user: any) =>
+    request<any>(`/settings/users/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(user),
+    }),
+
+  deleteSettingsUser: (id: number) =>
+    request<any>(`/settings/users/${id}`, {
+      method: 'DELETE',
+    }),
+
+  getDepartments: () =>
+    request<any[]>('/settings/departments'),
+
+  createDepartment: (dept: any) =>
+    request<any>('/settings/departments', {
+      method: 'POST',
+      body: JSON.stringify(dept),
+    }),
+
+  // Settings / Risk Weights
+  getRiskWeights: () =>
+    request<any>('/settings/risk-weights'),
+
+  updateRiskWeights: (weights: any) =>
+    request<any>('/settings/risk-weights', {
+      method: 'PUT',
+      body: JSON.stringify(weights),
+    }),
+
+  // Current User
+  getCurrentUser: () =>
+    request<any>('/auth/me'),
 };

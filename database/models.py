@@ -154,6 +154,12 @@ class Appeal(Base):
     user: Mapped["User"] = relationship(foreign_keys=[user_id])
     reviewer: Mapped[Optional["User"]] = relationship(foreign_keys=[reviewer_id])
 
+class SystemSetting(Base):
+    __tablename__ = "system_settings"
+    key: Mapped[str] = mapped_column(String(100), primary_key=True)
+    value: Mapped[Dict[str, Any]] = mapped_column(JSONB)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
 @event.listens_for(AuditLog, 'before_update')
 def receive_before_update(mapper, connection, target):
     raise RuntimeError("AuditLog entries are immutable and cannot be updated.")

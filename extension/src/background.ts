@@ -1,44 +1,113 @@
 /// <reference types="chrome" />
 
 let authToken = '';
+let currentUsername = 'employee';
+let currentRole = 'EMPLOYEE';
 
-async function loginToBackend() {
+async function getStoredCredentials(): Promise<{ username: string; password: string }> {
+  return new Promise((resolve) => {
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.get(['eaisg_username', 'eaisg_password'], (res: Record<string, any>) => {
+        resolve({
+          username: (res && res.eaisg_username) ? String(res.eaisg_username) : 'employee',
+          password: (res && res.eaisg_password) ? String(res.eaisg_password) : 'employee123',
+        });
+      });
+    } else {
+      resolve({ username: 'employee', password: 'employee123' });
+    }
+  });
+}
+
+async function loginToBackend(customUsername?: string, customPassword?: string): Promise<boolean> {
   try {
+    const creds = customUsername && customPassword
+      ? { username: customUsername, password: customPassword }
+      : await getStoredCredentials();
+
     const response = await fetch('http://127.0.0.1:8000/api/v1/auth/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: new URLSearchParams({
-        username: 'admin',
-        password: 'admin',
+        username: creds.username,
+        password: creds.password,
       }),
     });
+
+    if (!response.ok) {
+      console.error(`Login failed for user ${creds.username}: status ${response.status}`);
+      return false;
+    }
+
     const data = await response.json();
     if (data.access_token) {
       authToken = data.access_token;
-      console.log('EAISG Extension logged in successfully.');
+      currentUsername = creds.username;
+
+      // Persist in local extension storage
+      if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+        chrome.storage.local.set({
+          eaisg_username: creds.username,
+          eaisg_password: creds.password,
+        });
+      }
+
+      // Fetch user profile from /auth/me
+      try {
+        const meRes = await fetch('http://127.0.0.1:8000/api/v1/auth/me', {
+          headers: { 'Authorization': `Bearer ${authToken}` },
+        });
+        if (meRes.ok) {
+          const meData = await meRes.json();
+          currentRole = meData.role || 'EMPLOYEE';
+          currentUsername = meData.username || creds.username;
+        }
+      } catch (e) {
+        // Fallback
+      }
+
+      console.log(`[EAISG Extension] Logged in successfully as "${currentUsername}" (${currentRole}).`);
+      return true;
     }
+    return false;
   } catch (error) {
     console.error('Failed to login to EAISG backend:', error);
+    return false;
   }
 }
 
 // Initial login
 loginToBackend();
 
-// Listen for messages from content scripts
+// Listen for messages from content scripts and popup
 chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
-  if (request.type === 'ANALYZE_PROMPT') {
+  if (request.type === 'GET_USER_PROFILE') {
+    sendResponse({
+      success: !!authToken,
+      username: currentUsername,
+      role: currentRole,
+    });
+    return true;
+  } else if (request.type === 'LOGIN_USER') {
+    loginToBackend(request.payload.username, request.payload.password).then((success) => {
+      sendResponse({
+        success,
+        username: currentUsername,
+        role: currentRole,
+      });
+    });
+    return true;
+  } else if (request.type === 'ANALYZE_PROMPT') {
     if (!authToken) {
-      // Try logging in again if token is missing
       loginToBackend().then(() => {
         analyzePrompt(request.payload, sendResponse);
       });
-      return true; // Indicates asynchronous response
+      return true;
     } else {
       analyzePrompt(request.payload, sendResponse);
-      return true; // Indicates asynchronous response
+      return true;
     }
   } else if (request.type === 'ANALYZE_FILE') {
     if (!authToken) {
@@ -84,11 +153,10 @@ function b64toBlob(b64Data: string, contentType: string = '', sliceSize: number 
   return blob;
 }
 
-async function analyzeFile(payload: { fileName: string, fileType: string, fileData: string, aiModel?: string }, sendResponse: (response: any) => void) {
+async function analyzeFile(payload: { fileName: string; fileType: string; fileData: string; aiModel?: string }, sendResponse: (response: any) => void) {
   try {
     const blob = b64toBlob(payload.fileData, payload.fileType);
     const formData = new FormData();
-    // Assuming destination_id 1 is the default
     formData.append('destination_id', '1');
     if (payload.aiModel) formData.append('ai_model', payload.aiModel);
     formData.append('file', blob, payload.fileName);
@@ -96,9 +164,9 @@ async function analyzeFile(payload: { fileName: string, fileType: string, fileDa
     const response = await fetch('http://127.0.0.1:8000/api/v1/analyze/file', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${authToken}`
+        'Authorization': `Bearer ${authToken}`,
       },
-      body: formData
+      body: formData,
     });
     
     const data = await response.json();
@@ -109,19 +177,19 @@ async function analyzeFile(payload: { fileName: string, fileType: string, fileDa
   }
 }
 
-async function analyzePrompt(payload: { prompt: string, aiModel?: string }, sendResponse: (response: any) => void) {
+async function analyzePrompt(payload: { prompt: string; aiModel?: string }, sendResponse: (response: any) => void) {
   try {
     const response = await fetch('http://127.0.0.1:8000/api/v1/analyze/prompt', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${authToken}`
+        'Authorization': `Bearer ${authToken}`,
       },
       body: JSON.stringify({
         prompt: payload.prompt,
         ai_model: payload.aiModel,
-        destination_id: 1 // Default to 1 (e.g. generic external AI)
-      })
+        destination_id: 1,
+      }),
     });
     const data = await response.json();
     sendResponse({ success: true, data });
@@ -134,12 +202,11 @@ async function analyzePrompt(payload: { prompt: string, aiModel?: string }, send
 async function getRecentActivity(sendResponse: (response: any) => void) {
   try {
     const response = await fetch("http://127.0.0.1:8000/api/v1/dashboard/requests?limit=5", {
-      headers: { "Authorization": `Bearer ${authToken}` }
+      headers: { "Authorization": `Bearer ${authToken}` },
     });
     
-    // Also fetch destinations to map destination_id to provider name
     const destResponse = await fetch("http://127.0.0.1:8000/api/v1/settings/destinations", {
-      headers: { "Authorization": `Bearer ${authToken}` }
+      headers: { "Authorization": `Bearer ${authToken}` },
     });
     
     if (!response.ok || !destResponse.ok) {
@@ -154,10 +221,9 @@ async function getRecentActivity(sendResponse: (response: any) => void) {
       destMap[d.id] = d;
     }
     
-    // Merge data
     const merged = requests.map((r: any) => ({
       ...r,
-      destination: destMap[r.destination_id] || { name: "Unknown", provider: "Unknown" }
+      destination: destMap[r.destination_id] || { name: r.ai_model || "Unknown", provider: r.ai_model || "Unknown" },
     }));
     
     sendResponse({ success: true, data: merged });
