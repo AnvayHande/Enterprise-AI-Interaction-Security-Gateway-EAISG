@@ -5,7 +5,7 @@ from typing import Dict, Any, List
 from datetime import datetime, timedelta, timezone
 
 from database.session import get_db
-from database.models import User, Request, Finding, Policy, Department
+from database.models import User, Request, Finding, Policy, Department, AIDestination
 from security.dependencies import get_current_user
 
 router = APIRouter()
@@ -42,17 +42,20 @@ def get_requests(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    requests = db.query(Request).order_by(desc(Request.created_at)).offset(skip).limit(limit).all()
+    requests = db.query(Request, AIDestination.name).join(
+        AIDestination, Request.destination_id == AIDestination.id
+    ).order_by(desc(Request.created_at)).offset(skip).limit(limit).all()
     return [
         {
             "id": r.id,
             "user_id": r.user_id,
             "destination_id": r.destination_id,
+            "ai_model": ai_name,
             "status": r.status,
             "final_action": r.final_action,
             "risk_score": r.risk_score,
-            "created_at": r.created_at
-        } for r in requests
+            "created_at": r.created_at.replace(tzinfo=timezone.utc) if r.created_at else None
+        } for r, ai_name in requests
     ]
 
 @router.get("/findings")
@@ -104,8 +107,8 @@ def get_request_findings(
         {
             "id": f.id,
             "category": f.category,
-            "severity": f.severity,
-            "description": f.description
+            "severity": "CRITICAL" if f.confidence > 0.8 else ("HIGH" if f.confidence > 0.5 else "LOW"),
+            "description": f"Detected potential {f.category} (confidence: {f.confidence*100:.1f}%). Redacted content: {f.evidence}" if f.evidence else f"Detected potential {f.category} (confidence: {f.confidence*100:.1f}%)."
         } for f in findings
     ]
 
@@ -115,7 +118,10 @@ def get_critical_requests(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    requests = db.query(Request).filter(
+    from database.models import AIDestination
+    requests = db.query(Request, AIDestination.name).join(
+        AIDestination, Request.destination_id == AIDestination.id
+    ).filter(
         Request.final_action == "BLOCK"
     ).order_by(desc(Request.created_at)).limit(limit).all()
     
@@ -124,9 +130,10 @@ def get_critical_requests(
             "id": r.id,
             "user_id": r.user_id,
             "destination_id": r.destination_id,
+            "ai_model": ai_name,
             "status": r.status,
             "final_action": r.final_action,
             "risk_score": r.risk_score,
-            "created_at": r.created_at
-        } for r in requests
+            "created_at": r.created_at.replace(tzinfo=timezone.utc) if r.created_at else None
+        } for r, ai_name in requests
     ]

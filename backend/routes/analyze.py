@@ -43,6 +43,22 @@ risk_aggregator = RiskAggregator()
 sanitizer = Sanitizer()
 response_detector = ResponseDetector()
 
+def _get_or_create_destination(db: Session, ai_model_name: Optional[str], fallback_id: int) -> int:
+    if not ai_model_name or ai_model_name == "Unknown AI":
+        return fallback_id
+    from database.models import AIDestination
+    dest = db.query(AIDestination).filter(AIDestination.name == ai_model_name).first()
+    if dest:
+        return dest.id
+    new_dest = AIDestination(
+        name=ai_model_name,
+        provider=ai_model_name.lower(),
+        trust_level="PUBLIC"
+    )
+    db.add(new_dest)
+    db.commit()
+    db.refresh(new_dest)
+    return new_dest.id
 @router.post("/prompt", response_model=AnalyzeResponse)
 @rate_limit(requests_per_minute=30)
 def analyze_prompt(
@@ -50,6 +66,8 @@ def analyze_prompt(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    actual_destination_id = _get_or_create_destination(db, payload.ai_model, payload.destination_id)
+
     # 1. Normalization & Hashing
     prompt = payload.prompt
     raw_hash = hashlib.sha256(prompt.encode('utf-8')).hexdigest()
@@ -135,7 +153,7 @@ def analyze_prompt(
         from ai_engine.router import RoutingManager
         router_mgr = RoutingManager(db)
         try:
-            provider_response, provider_used = router_mgr.route_request(payload.destination_id, text_to_route)
+            provider_response, provider_used = router_mgr.route_request(actual_destination_id, text_to_route)
         except Exception as e:
             final_action = "FAILED"
             provider_response = f"Routing failed: {str(e)}"
@@ -157,7 +175,7 @@ def analyze_prompt(
     # 4. Persistence
     db_request = DBRequest(
         user_id=current_user.id,
-        destination_id=provider_used if provider_used else payload.destination_id,
+        destination_id=provider_used if provider_used else actual_destination_id,
         request_hash=raw_hash,
         raw_content_hash=raw_hash,
         status="PROCESSED" if final_action != "FAILED" else "FAILED",
@@ -239,9 +257,12 @@ def analyze_prompt(
 async def analyze_file(
     file: UploadFile = File(...),
     destination_id: int = Form(...),
+    ai_model: Optional[str] = Form(None),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    actual_destination_id = _get_or_create_destination(db, ai_model, destination_id)
+
     file_content = await file.read()
     filename = file.filename
     
@@ -328,7 +349,7 @@ async def analyze_file(
         from ai_engine.router import RoutingManager
         router_mgr = RoutingManager(db)
         try:
-            provider_response, provider_used = router_mgr.route_request(destination_id, text_to_route)
+            provider_response, provider_used = router_mgr.route_request(actual_destination_id, text_to_route)
         except Exception as e:
             final_action = "FAILED"
             provider_response = f"Routing failed: {str(e)}"
@@ -353,7 +374,7 @@ async def analyze_file(
     # 4. Persistence
     db_request = DBRequest(
         user_id=current_user.id,
-        destination_id=provider_used if provider_used else destination_id,
+        destination_id=provider_used if provider_used else actual_destination_id,
         request_hash=file_hash,
         raw_content_hash=file_hash,
         status="PROCESSED" if final_action != "FAILED" else "FAILED",

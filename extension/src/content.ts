@@ -16,21 +16,21 @@ window.addEventListener('message', (event) => {
   if (event.source !== window) return;
 
   if (event.data && event.data.type === 'EAISG_CHECK_PROMPT') {
-    const { prompt, id } = event.data;
+    const { prompt, id, aiModel } = event.data;
 
     // Send it to the background script
     chrome.runtime.sendMessage(
-      { type: 'ANALYZE_PROMPT', payload: prompt },
+      { type: 'ANALYZE_PROMPT', payload: { prompt, aiModel } },
       (response) => {
         // Send the response back to the page world
         window.postMessage({ type: 'EAISG_CHECK_RESPONSE', id, response }, '*');
       }
     );
   } else if (event.data && event.data.type === 'EAISG_CHECK_FILE') {
-    const { fileData, fileName, fileType, id } = event.data;
+    const { fileData, fileName, fileType, id, aiModel } = event.data;
     
     chrome.runtime.sendMessage(
-      { type: 'ANALYZE_FILE', payload: { fileData, fileName, fileType } },
+      { type: 'ANALYZE_FILE', payload: { fileData, fileName, fileType, aiModel } },
       (response) => {
         window.postMessage({ type: 'EAISG_CHECK_RESPONSE', id, response }, '*');
       }

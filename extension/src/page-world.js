@@ -134,11 +134,21 @@ function showEaisgAlert(title, message, findings) {
   });
 }
 
-function checkPromptWithEAISG(prompt) {
+function detectAIModel(url = '') {
+  const hostname = window.location.hostname || '';
+  if (url.includes('chatgpt.com/backend-api') || hostname.includes('chatgpt.com')) return 'ChatGPT';
+  if (url.includes('claude.ai/api') || hostname.includes('claude.ai')) return 'Claude';
+  if (url.includes('gemini.google.com') || url.includes('/_/BardChatUi') || hostname.includes('gemini.google.com')) return 'Gemini';
+  if (url.includes('sydney.bing.com') || hostname.includes('bing.com')) return 'Copilot';
+  if (url.includes('perplexity.ai') || hostname.includes('perplexity.ai')) return 'Perplexity';
+  return 'Unknown AI';
+}
+
+function checkPromptWithEAISG(prompt, aiModel = 'Unknown AI') {
   return new Promise((resolve) => {
     const id = Math.random().toString(36).substring(7);
     pendingChecks.set(id, resolve);
-    window.postMessage({ type: 'EAISG_CHECK_PROMPT', prompt, id }, '*');
+    window.postMessage({ type: 'EAISG_CHECK_PROMPT', prompt, id, aiModel }, '*');
   });
 }
 
@@ -155,12 +165,12 @@ function fileToBase64(file) {
   });
 }
 
-function checkFileWithEAISG(file) {
+function checkFileWithEAISG(file, aiModel = 'Unknown AI') {
   return new Promise(async (resolve) => {
     const id = Math.random().toString(36).substring(7);
     pendingChecks.set(id, resolve);
     const fileData = await fileToBase64(file);
-    window.postMessage({ type: 'EAISG_CHECK_FILE', fileData, fileName: file.name, fileType: file.type, id }, '*');
+    window.postMessage({ type: 'EAISG_CHECK_FILE', fileData, fileName: file.name, fileType: file.type, id, aiModel }, '*');
   });
 }
 
@@ -170,7 +180,7 @@ document.addEventListener('change', async (event) => {
   if (target.tagName === 'INPUT' && target.type === 'file' && target.files.length > 0) {
     const file = target.files[0];
     console.log('[EAISG] Intercepted file selection (change event):', file.name);
-    const eaisgResult = await checkFileWithEAISG(file);
+    const eaisgResult = await checkFileWithEAISG(file, detectAIModel());
     if (eaisgResult.success && eaisgResult.data && (eaisgResult.data.final_action || eaisgResult.data.action) === 'BLOCK') {
       showEaisgAlert('EAISG Security Alert', 'This file was blocked due to security policy violations.', eaisgResult.data.findings);
       target.value = ''; // Clear the selected file
@@ -183,7 +193,7 @@ document.addEventListener('drop', async (event) => {
   if (event.dataTransfer && event.dataTransfer.files.length > 0) {
     const file = event.dataTransfer.files[0];
     console.log('[EAISG] Intercepted file drop:', file.name);
-    const eaisgResult = await checkFileWithEAISG(file);
+    const eaisgResult = await checkFileWithEAISG(file, detectAIModel());
     if (eaisgResult.success && eaisgResult.data && (eaisgResult.data.final_action || eaisgResult.data.action) === 'BLOCK') {
       showEaisgAlert('EAISG Security Alert', 'The dropped file was blocked due to security policy violations. Please remove it from the chat.', eaisgResult.data.findings);
       // Cannot easily reverse a drop event asynchronously, so we warn the user.
@@ -204,12 +214,12 @@ window.fetch = async (...args) => {
 
   const hostname = window.location.hostname || '';
   
-  // Target ChatGPT, Claude, Gemini, Copilot, Perplexity
-  const isChatGPT = url.includes('/conversation') || url.includes('chatgpt.com/backend-api') || (hostname.includes('chatgpt.com') && url.includes('/backend-api/'));
-  const isClaude = url.includes('claude.ai/api') || url.includes('/api/append_message') || url.includes('/api/organizations') || (hostname.includes('claude.ai') && url.includes('/api/'));
-  const isGemini = url.includes('/_/BardChatUi/data/batchexecute') || url.includes('gemini.google.com') || (hostname.includes('gemini.google.com') && url.includes('batchexecute'));
-  const isCopilot = url.includes('sydney.bing.com') || hostname.includes('bing.com');
-  const isPerplexity = url.includes('perplexity.ai') || hostname.includes('perplexity.ai');
+  // Target ONLY message-sending endpoints, not settings/analytics/conversation-list calls
+  const isChatGPT = (hostname.includes('chatgpt.com') && url.includes('/backend-api/conversation'));
+  const isClaude = (hostname.includes('claude.ai') && (url.includes('/completion') || url.includes('/append_message') || url.includes('/chat_message')));
+  const isGemini = url.includes('/_/BardChatUi/data/batchexecute') || (hostname.includes('gemini.google.com') && url.includes('batchexecute'));
+  const isCopilot = url.includes('sydney.bing.com/sydney/') && config && config.method && config.method.toUpperCase() === 'POST';
+  const isPerplexity = hostname.includes('perplexity.ai') && url.includes('/api/') && config && config.method && config.method.toUpperCase() === 'POST';
 
   if ((isChatGPT || isClaude || isGemini || isCopilot || isPerplexity) && config && config.body) {
     try {
@@ -219,9 +229,9 @@ window.fetch = async (...args) => {
           if (value instanceof File || value instanceof Blob) {
             const file = value instanceof File ? value : new File([value], 'blob', { type: value.type });
             console.log('[EAISG] Intercepted file upload via fetch:', file.name);
-            const fileResult = await checkFileWithEAISG(file);
-            if (fileResult.success && fileResult.data && (fileResult.data.final_action || fileResult.data.action) === 'BLOCK') {
-              showEaisgAlert('EAISG Security Alert', 'This file upload was blocked due to security policy violations.', fileResult.data.findings);
+            const eaisgResult = await checkFileWithEAISG(file, detectAIModel(url));
+            if (eaisgResult.success && eaisgResult.data && (eaisgResult.data.final_action || eaisgResult.data.action) === 'BLOCK') {
+              showEaisgAlert('EAISG Security Alert', 'This file upload was blocked due to security policy violations.', eaisgResult.data.findings);
               return Promise.reject(new Error('EAISG Blocked File Upload'));
             }
           }
@@ -235,31 +245,25 @@ window.fetch = async (...args) => {
       try {
         bodyObj = JSON.parse(config.body);
         if (isChatGPT) {
-          // ChatGPT payload extraction
-          // It could be in messages array. Let's extract the last user message part.
+          // ChatGPT payload extraction — only extract the actual user-typed message
           if (bodyObj.messages && Array.isArray(bodyObj.messages)) {
             const userMessages = bodyObj.messages.filter((m) => m?.author?.role === 'user' || !m.author);
             const lastMessage = userMessages[userMessages.length - 1] || bodyObj.messages[0];
-            promptText = lastMessage?.content?.parts?.join('\n') || '';
+            promptText = lastMessage?.content?.parts?.filter(p => typeof p === 'string')?.join('\n') || '';
           }
-          if (!promptText) {
-             // Fallback
-             promptText = JSON.stringify(bodyObj);
-          }
+          // Do NOT fall back to JSON.stringify — that would scan internal metadata
+          // (conversation_id, gizmo_id, timezone, etc.) and cause false positives
         } else if (isClaude) {
           // Claude payload extraction
-          promptText = bodyObj.prompt || bodyObj.text || JSON.stringify(bodyObj);
+          promptText = bodyObj.prompt || bodyObj.text || '';
         } else if (isPerplexity) {
           // Perplexity payload extraction
           if (bodyObj.messages && Array.isArray(bodyObj.messages)) {
             const userMessages = bodyObj.messages.filter((m) => m.role === 'user');
-            promptText = userMessages.length > 0 ? userMessages[userMessages.length - 1].content : JSON.stringify(bodyObj);
-          } else {
-            promptText = JSON.stringify(bodyObj);
+            promptText = userMessages.length > 0 ? userMessages[userMessages.length - 1].content : '';
           }
-        } else {
-          promptText = JSON.stringify(bodyObj);
         }
+        // For unknown providers, skip rather than scanning raw JSON metadata
       } catch (e) {
         // Not JSON, might be URL encoded (like Gemini)
         if (typeof config.body === 'string') {
@@ -277,7 +281,7 @@ window.fetch = async (...args) => {
 
       if (promptText) {
         console.log('[EAISG] Intercepted prompt:', promptText);
-        const eaisgResult = await checkPromptWithEAISG(promptText);
+        const eaisgResult = await checkPromptWithEAISG(promptText, detectAIModel(url));
         
         console.log('[EAISG] Gateway response:', eaisgResult);
         
@@ -327,19 +331,34 @@ window.fetch = async (...args) => {
 const originalWebSocketSend = WebSocket.prototype.send;
 WebSocket.prototype.send = function(data) {
   const hostname = window.location.hostname || '';
-  if (typeof data === 'string' && (hostname.includes('perplexity.ai') || hostname.includes('bing.com') || data.includes('"prompt"') || data.includes('"messages"') || data.includes('"message"'))) {
-    // Attempt to parse out user prompt to avoid blocking harmless socket pings
-    let promptText = data;
+  if (typeof data === 'string' && (hostname.includes('perplexity.ai') || hostname.includes('bing.com'))) {
+    // Only intercept WebSocket messages that are likely to contain user prompts
+    let promptText = '';
     try {
       // Decode if it's a Socket.IO message e.g., 42["chat", {...}]
       if (data.startsWith('42')) {
         const jsonStr = data.substring(2);
         const parsed = JSON.parse(jsonStr);
-        promptText = JSON.stringify(parsed);
+        // Extract actual user text from the structured message
+        if (Array.isArray(parsed) && parsed.length >= 2 && typeof parsed[1] === 'object') {
+          promptText = parsed[1].query || parsed[1].text || parsed[1].prompt || '';
+        }
+      } else {
+        // Try parsing as plain JSON and extracting user prompt fields
+        const parsed = JSON.parse(data);
+        promptText = parsed.query || parsed.text || parsed.prompt || '';
       }
-    } catch (e) {}
+    } catch (e) {
+      // Not parseable, skip — don't scan raw wire data
+    }
 
-    checkPromptWithEAISG(promptText).then(eaisgResult => {
+    if (!promptText) {
+      // No user prompt found in the message, pass through without scanning
+      originalWebSocketSend.call(this, data);
+      return;
+    }
+
+    checkPromptWithEAISG(promptText, detectAIModel()).then(eaisgResult => {
       if (eaisgResult.success && eaisgResult.data) {
         const action = eaisgResult.data.final_action || eaisgResult.data.action;
         if (action === 'BLOCK') {
@@ -376,13 +395,11 @@ XMLHttpRequest.prototype.send = function(body) {
   const url = this._url || '';
   const hostname = window.location.hostname || '';
   
+  // XHR interception: only for Gemini (which uses XHR with URL-encoded bodies)
+  // Claude and ChatGPT use fetch, so they are handled above.
   const isGemini = url.includes('/_/BardChatUi/data/batchexecute') || (hostname.includes('gemini.google.com') && url.includes('batchexecute'));
-  const isCopilot = url.includes('sydney.bing.com') || hostname.includes('bing.com');
-  const isPerplexity = url.includes('perplexity.ai') || hostname.includes('perplexity.ai');
-  const isClaude = hostname.includes('claude.ai') && url.includes('/api/');
-  const isChatGPT = hostname.includes('chatgpt.com') && url.includes('/backend-api/');
 
-  if ((isGemini || isCopilot || isPerplexity || isClaude || isChatGPT) && body) {
+  if (isGemini && body) {
     const processXHR = async () => {
       // 1. Network-Level File Interception (FormData)
       if (body instanceof FormData) {
@@ -390,9 +407,9 @@ XMLHttpRequest.prototype.send = function(body) {
           if (value instanceof File || value instanceof Blob) {
             const file = value instanceof File ? value : new File([value], 'blob', { type: value.type });
             console.log('[EAISG] Intercepted file upload via XHR:', file.name);
-            const fileResult = await checkFileWithEAISG(file);
-            if (fileResult.success && fileResult.data && (fileResult.data.final_action || fileResult.data.action) === 'BLOCK') {
-              showEaisgAlert('EAISG Security Alert', 'This file upload was blocked due to security policy violations.', fileResult.data.findings);
+            const eaisgResult = await checkFileWithEAISG(file, detectAIModel(url));
+            if (eaisgResult.success && eaisgResult.data && (eaisgResult.data.final_action || eaisgResult.data.action) === 'BLOCK') {
+              showEaisgAlert('EAISG Security Alert', 'This file upload was blocked due to security policy violations.', eaisgResult.data.findings);
               this.dispatchEvent(new Event('error'));
               return; // Block XHR
             }
@@ -400,7 +417,7 @@ XMLHttpRequest.prototype.send = function(body) {
         }
       }
 
-      // 2. Prompt Interception
+      // 2. Prompt Interception (Gemini uses URL-encoded bodies)
       let promptText = '';
       
       if (typeof body === 'string') {
@@ -418,16 +435,14 @@ XMLHttpRequest.prototype.send = function(body) {
       }
 
       if (promptText && promptText.length > 5 && !promptText.includes('EAISG_CHECK')) {
-        const eaisgResult = await checkPromptWithEAISG(promptText);
+        const eaisgResult = await checkPromptWithEAISG(promptText, detectAIModel(url));
         if (eaisgResult.success && eaisgResult.data) {
           const action = eaisgResult.data.final_action || eaisgResult.data.action;
           if (action === 'BLOCK') {
             showEaisgAlert('EAISG Security Alert', 'This prompt was blocked due to security policy violations.', eaisgResult.data.findings);
-            // Block XHR by dispatching error and NOT calling originalXHRSend
             this.dispatchEvent(new Event('error'));
             return;
           } else if (action === 'SANITIZE' && eaisgResult.data.sanitized_content) {
-            // Sanitization in URL encoded body is complex, just pass original for now
             originalXHRSend.call(this, body);
             return;
           }
@@ -437,7 +452,7 @@ XMLHttpRequest.prototype.send = function(body) {
     };
 
     processXHR();
-    return; // Return immediately to block sync send while we async check
+    return;
   }
   
   return originalXHRSend.call(this, body);

@@ -16,10 +16,14 @@ class PresidioPIIDetector:
             
         self.analyzer = AnalyzerEngine(registry=registry)
         
-    def analyze(self, text: str) -> List[Dict[str, Any]]:
+    def analyze(self, text: str, min_confidence: float = 0.5) -> List[Dict[str, Any]]:
         findings = []
         for locale in self.locales:
-            results = self.analyzer.analyze(text=text, language=locale)
+            results = self.analyzer.analyze(
+                text=text,
+                language=locale,
+                score_threshold=min_confidence
+            )
             for result in results:
                 findings.append({
                     "category": f"PII_{result.entity_type}",

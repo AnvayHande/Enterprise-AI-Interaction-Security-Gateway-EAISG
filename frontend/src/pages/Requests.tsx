@@ -10,6 +10,7 @@ interface RequestLog {
   id: string | number;
   user_id: number;
   destination_id: number;
+  ai_model?: string;
   status: string;
   final_action: string;
   risk_score: number;
@@ -72,6 +73,7 @@ export function Requests() {
             <TableRow>
               <TableHead className="w-[100px]">Request ID</TableHead>
               <TableHead>User ID</TableHead>
+              <TableHead>AI Model</TableHead>
               <TableHead>Date</TableHead>
               <TableHead>Risk Score</TableHead>
               <TableHead className="text-right">Action</TableHead>
@@ -83,6 +85,7 @@ export function Requests() {
               <TableRow key={req.id}>
                 <TableCell className="font-medium" title={String(req.id)}>{String(req.id).substring(0, 8)}{String(req.id).length > 8 ? '...' : ''}</TableCell>
                 <TableCell>{req.user_id}</TableCell>
+                <TableCell>{req.ai_model || req.destination_id}</TableCell>
                 <TableCell>{new Date(req.created_at).toLocaleString()}</TableCell>
                 <TableCell>{req.risk_score.toFixed(2)}</TableCell>
                 <TableCell className="text-right">
@@ -114,6 +117,10 @@ export function Requests() {
                 <div>
                   <p className="font-semibold text-muted-foreground">User ID</p>
                   <p>{selectedRequest.user_id}</p>
+                </div>
+                <div>
+                  <p className="font-semibold text-muted-foreground">AI Model</p>
+                  <p>{selectedRequest.ai_model || selectedRequest.destination_id}</p>
                 </div>
                 <div>
                   <p className="font-semibold text-muted-foreground">Date</p>

@@ -84,12 +84,13 @@ function b64toBlob(b64Data: string, contentType: string = '', sliceSize: number 
   return blob;
 }
 
-async function analyzeFile(payload: { fileName: string, fileType: string, fileData: string }, sendResponse: (response: any) => void) {
+async function analyzeFile(payload: { fileName: string, fileType: string, fileData: string, aiModel?: string }, sendResponse: (response: any) => void) {
   try {
     const blob = b64toBlob(payload.fileData, payload.fileType);
     const formData = new FormData();
     // Assuming destination_id 1 is the default
     formData.append('destination_id', '1');
+    if (payload.aiModel) formData.append('ai_model', payload.aiModel);
     formData.append('file', blob, payload.fileName);
 
     const response = await fetch('http://127.0.0.1:8000/api/v1/analyze/file', {
@@ -108,7 +109,7 @@ async function analyzeFile(payload: { fileName: string, fileType: string, fileDa
   }
 }
 
-async function analyzePrompt(prompt: string, sendResponse: (response: any) => void) {
+async function analyzePrompt(payload: { prompt: string, aiModel?: string }, sendResponse: (response: any) => void) {
   try {
     const response = await fetch('http://127.0.0.1:8000/api/v1/analyze/prompt', {
       method: 'POST',
@@ -117,7 +118,8 @@ async function analyzePrompt(prompt: string, sendResponse: (response: any) => vo
         'Authorization': `Bearer ${authToken}`
       },
       body: JSON.stringify({
-        prompt: prompt,
+        prompt: payload.prompt,
+        ai_model: payload.aiModel,
         destination_id: 1 // Default to 1 (e.g. generic external AI)
       })
     });

@@ -4,6 +4,7 @@ from typing import List, Optional, Dict, Any
 class PromptAnalyzeRequest(BaseModel):
     prompt: str
     destination_id: int
+    ai_model: Optional[str] = None
 
 class FindingSchema(BaseModel):
     category: str

@@ -16,11 +16,13 @@ class FindingResponse(BaseModel):
 class ReasoningAgent:
     def __init__(self):
         # We try to initialize the LLM. If OPENAI_API_KEY is missing, we will fallback gracefully.
-        self.api_key = os.getenv("OPENAI_API_KEY")
+        from database.config import settings
+        self.api_key = settings.openai_api_key or os.getenv("OPENAI_API_KEY")
         self.is_available = bool(self.api_key)
         
         if self.is_available:
-            self.llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0.0)
+            os.environ["OPENAI_API_KEY"] = self.api_key
+            self.llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0.0, api_key=self.api_key)
             self.parser = JsonOutputParser(pydantic_object=FindingResponse)
             
             prompt_template = """
