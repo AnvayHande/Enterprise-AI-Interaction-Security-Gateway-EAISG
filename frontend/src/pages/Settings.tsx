@@ -153,6 +153,17 @@ export function Settings() {
     }
   };
 
+  const handleDeleteDest = async (id: number, name: string) => {
+    if (!confirm(`Are you sure you want to delete AI destination "${name}"?`)) return;
+    try {
+      await api.deleteDestination(id);
+      fetchDestinations();
+    } catch (err: any) {
+      console.error('Failed to delete destination', err);
+      alert(err.message || 'Failed to delete destination');
+    }
+  };
+
   // --- User Handlers ---
   const handleAddUserSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -261,11 +272,16 @@ export function Settings() {
                           <p className="font-medium">{dest.name}</p>
                           <p className="text-sm text-muted-foreground">Provider: {dest.provider} | Trust: {dest.trust_level}</p>
                         </div>
-                        <Button variant="outline" size="sm" onClick={() => {
-                          setSelectedDest(dest);
-                          setDestFormData({ name: dest.name, provider: dest.provider, trust_level: dest.trust_level });
-                          setOpenEditDest(true);
-                        }}>Edit</Button>
+                        <div className="space-x-2">
+                          <Button variant="outline" size="sm" onClick={() => {
+                            setSelectedDest(dest);
+                            setDestFormData({ name: dest.name, provider: dest.provider, trust_level: dest.trust_level });
+                            setOpenEditDest(true);
+                          }}>Edit</Button>
+                          <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700" onClick={() => handleDeleteDest(dest.id, dest.name)}>
+                            Delete
+                          </Button>
+                        </div>
                       </div>
                     ))
                   ) : (

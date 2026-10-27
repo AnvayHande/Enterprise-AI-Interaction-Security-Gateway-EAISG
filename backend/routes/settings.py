@@ -62,6 +62,20 @@ def update_destination(
     db.refresh(dest)
     return dest
 
+@router.delete("/destinations/{destination_id}")
+def delete_destination(
+    destination_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    dest = db.query(AIDestination).filter(AIDestination.id == destination_id).first()
+    if not dest:
+        raise HTTPException(status_code=404, detail="Destination not found")
+        
+    db.delete(dest)
+    db.commit()
+    return {"status": "success", "message": "Destination deleted"}
+
 # --- User Management ---
 
 @router.get("/users")

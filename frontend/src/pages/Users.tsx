@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { api } from '../lib/api';
 
 interface UserRisk {
@@ -14,18 +15,22 @@ export function Users() {
   const [users, setUsers] = useState<UserRisk[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const fetchUsers = async () => {
+    setIsRefreshing(true);
+    try {
+      const data = await api.getUsersRisk(30);
+      setUsers(data);
+    } catch (err) {
+      console.error('Failed to load user risks', err);
+    } finally {
+      setLoading(false);
+      setIsRefreshing(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const data = await api.getUsersRisk(30);
-        setUsers(data);
-      } catch (err) {
-        console.error('Failed to load user risks', err);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchUsers();
   }, []);
 
@@ -38,22 +43,32 @@ export function Users() {
     );
   });
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div>Loading user risks...</div>;
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">User Risk Aggregates</h2>
           <p className="text-sm text-muted-foreground">Historical risk telemetry per user across the last 30 days.</p>
         </div>
-        <div className="flex w-full max-w-sm items-center space-x-2">
-          <Input
-            type="text"
-            placeholder="Search user or department..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+        <div className="flex items-center space-x-2">
+          <Button variant="outline" size="sm" onClick={fetchUsers} disabled={isRefreshing}>
+            {isRefreshing ? 'Refreshing...' : 'Refresh'}
+          </Button>
+          <div className="flex w-full max-w-sm items-center space-x-2">
+            <Input
+              type="text"
+              placeholder="Search user or department..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            {search && (
+              <Button variant="ghost" size="sm" onClick={() => setSearch('')}>
+                ✕
+              </Button>
+            )}
+          </div>
         </div>
       </div>
       <div className="rounded-md border bg-card">

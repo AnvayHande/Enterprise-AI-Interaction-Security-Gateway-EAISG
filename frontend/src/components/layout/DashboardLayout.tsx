@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Shield, LayoutDashboard, List, Target, Users, Settings, FileSearch, LogOut } from 'lucide-react';
+import { Shield, LayoutDashboard, List, Target, Users, Settings, FileSearch, LogOut, User as UserIcon } from 'lucide-react';
+import { api } from '../../lib/api';
 
 const navigation = [
   { name: 'Overview', href: '/', icon: LayoutDashboard },
@@ -17,6 +19,13 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ onLogout }: DashboardLayoutProps) {
   const location = useLocation();
+  const [currentUser, setCurrentUser] = useState<{ username: string; role: string; department_name?: string } | null>(null);
+
+  useEffect(() => {
+    api.getCurrentUser()
+      .then(user => setCurrentUser(user))
+      .catch(err => console.error('Failed to load current user', err));
+  }, []);
 
   return (
     <div className="flex h-screen bg-muted/20">
@@ -65,7 +74,15 @@ export function DashboardLayout({ onLogout }: DashboardLayoutProps) {
       <div className="flex-1 flex flex-col overflow-hidden">
         <header className="h-16 bg-background border-b flex items-center justify-between px-6">
           <h1 className="text-xl font-semibold">Governance Dashboard</h1>
-          <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">admin</span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 bg-muted px-2.5 py-1 rounded-full flex items-center gap-1.5 border">
+              <UserIcon className="w-3 h-3 text-primary" />
+              {currentUser ? currentUser.username : 'admin'}
+              <span className="text-[10px] uppercase font-bold text-primary ml-1">
+                {currentUser?.role || 'ADMIN'}
+              </span>
+            </span>
+          </div>
         </header>
         <main className="flex-1 overflow-auto p-6">
           <Outlet />

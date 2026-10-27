@@ -12,11 +12,14 @@ export function Overview() {
   } | null>(null);
   const [criticalEvents, setCriticalEvents] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [days, setDays] = useState(7);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const init = async (showError = true) => {
+  const init = async (showError = true, currentDays = days) => {
     try {
       if (showError) setError(null);
-      const stats = await api.getOverviewStats(7);
+      setIsRefreshing(true);
+      const stats = await api.getOverviewStats(currentDays);
       setData(stats);
       const events = await api.getCriticalEvents(5);
       setCriticalEvents(events);
@@ -25,23 +28,25 @@ export function Overview() {
       if (showError) {
         setError(err?.message || 'Failed to load statistics. Please verify backend is running.');
       }
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
   useEffect(() => {
-    init(true);
+    init(true, days);
     const interval = setInterval(() => {
-      init(false);
+      init(false, days);
     }, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [days]);
 
   if (error) {
     return (
       <div className="p-8 text-center space-y-4 bg-card rounded-lg border max-w-md mx-auto mt-12">
         <p className="text-destructive font-medium text-sm">{error}</p>
         <div className="flex justify-center space-x-3">
-          <Button onClick={() => init()} variant="outline" size="sm">Retry</Button>
+          <Button onClick={() => init(true, days)} variant="outline" size="sm">Retry</Button>
           <Button onClick={() => { localStorage.removeItem('access_token'); window.location.reload(); }} size="sm">Login Again</Button>
         </div>
       </div>
@@ -67,6 +72,32 @@ export function Overview() {
 
   return (
     <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Security Overview</h2>
+          <p className="text-sm text-muted-foreground">Live telemetry and policy enforcement statistics across enterprise interactions.</p>
+        </div>
+        <div className="flex items-center space-x-2">
+          <select
+            value={days}
+            onChange={(e) => setDays(Number(e.target.value))}
+            className="h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          >
+            <option value={7}>Last 7 Days</option>
+            <option value={14}>Last 14 Days</option>
+            <option value={30}>Last 30 Days</option>
+          </select>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => init(true, days)} 
+            disabled={isRefreshing}
+          >
+            {isRefreshing ? 'Refreshing...' : 'Refresh'}
+          </Button>
+        </div>
+      </div>
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -74,7 +105,7 @@ export function Overview() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{data.total_requests}</div>
-            <p className="text-xs text-muted-foreground">Last 7 days</p>
+            <p className="text-xs text-muted-foreground">Last {days} days</p>
           </CardContent>
         </Card>
         <Card>
@@ -101,7 +132,7 @@ export function Overview() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{data.average_risk}</div>
-            <p className="text-xs text-muted-foreground">Last 7 days</p>
+            <p className="text-xs text-muted-foreground">Last {days} days</p>
           </CardContent>
         </Card>
       </div>
@@ -109,7 +140,7 @@ export function Overview() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
         <Card className="col-span-4">
           <CardHeader>
-            <CardTitle>Decisions Breakdown (Last 7 Days)</CardTitle>
+            <CardTitle>Decisions Breakdown (Last {days} Days)</CardTitle>
           </CardHeader>
           <CardContent className="pl-2">
             <div className="h-[300px]">

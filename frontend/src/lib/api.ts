@@ -134,6 +134,11 @@ export const api = {
       body: JSON.stringify(dest),
     }),
 
+  deleteDestination: (id: number) =>
+    request<any>(`/settings/destinations/${id}`, {
+      method: 'DELETE',
+    }),
+
   // Settings / User Management
   getSettingsUsers: () =>
     request<any[]>('/settings/users'),
